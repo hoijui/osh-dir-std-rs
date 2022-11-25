@@ -1,0 +1,38 @@
+# SPDX-FileCopyrightText: 2022 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "osh-dir-std"
+version = "0.1.0"
+edition = "2021"
+description = """
+    Code that helps humans and machines dealing with
+    the [OSH directory standard](
+    https://github.com/hoijui/osh-dir-std).
+    """
+repository = "https://github.com/hoijui/osh-dir-std-rs"
+keywords = ["norm", "osh", "directory", "structure"]
+categories = ["standard", "specification", "osh"]
+license = "AGPL-3.0-or-later"
+authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+publish = false
+
+[dependencies]
+codify = { git = "https://github.com/hoijui/codify-rs.git" }
+csv = "1.1"
+log = "0.4"
+once_cell = "1.16"
+regex = "1.7"
+relative-path = { version = "1.7", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_regex = "1.1"
+thiserror = "1.0"
+
+[build-dependencies]
+codify = { git = "https://github.com/hoijui/codify-rs.git" }
+csv = "1.1"
+regex = "1.7"
+serde = { version = "1.0", features = ["derive"] }
+serde_regex = "1.1"
+thiserror = "1.0"
