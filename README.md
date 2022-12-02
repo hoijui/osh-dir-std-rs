@@ -12,6 +12,9 @@ SPDX-License-Identifier: CC0-1.0
 [![REUSE status](
     https://api.reuse.software/badge/github.com/hoijui/osh-dir-std-rs)](
     https://api.reuse.software/info/github.com/hoijui/osh-dir-std-rs)
+[![In cooperation with FabCity Hamburg](
+    https://custom-icon-badges.demolab.com/badge/-FCHH-dddddd.svg?logo=fc_logo)](
+    https://fabcity.hamburg)
 
 * OSH: _**O**pen **S**ource **H**ardware_
 
