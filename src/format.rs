@@ -190,9 +190,9 @@ impl DirStandard {
             let record: Record = result?;
             indicativeness_sum += record.indicativeness;
             records_raw.push(record);
-            // println!("{:?}", record);
+            // trace!("{:?}", record);
             // Try this if you don't like each record smushed on one line:
-            // println!("{:#?}", record);
+            // trace!("{:#?}", record);
         }
         let mut records = vec![];
         for mut record in records_raw {
