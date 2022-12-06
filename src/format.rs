@@ -197,6 +197,12 @@ impl DirStandard {
         let mut records = vec![];
         for mut record in records_raw {
             record.indicativeness /= indicativeness_sum;
+            // NOTE We do this to force a case insensitive matching, and for the whole string!
+            //      see <https://github.com/rust-lang/regex/discussions/737#discussioncomment-264790>
+            record.regex = Regex::new(&format!("(?i)^(?:{})$", record.regex)).expect(
+                "This should always be a valid regex, if the original was valid, \
+                which it has to be, due to being successfully parsed already",
+            );
             records.push(record);
         }
 
