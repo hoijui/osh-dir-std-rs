@@ -59,6 +59,16 @@ fn out_file(args: &ArgMatches, out_type: &str) -> PathBuf {
     out_file
 }
 
+fn print_version_and_exit(quiet: bool) {
+    #![allow(clippy::print_stdout)]
+
+    if !quiet {
+        print!("{} ", clap::crate_name!());
+    }
+    println!("{}", osh_dir_std::VERSION);
+    std::process::exit(0);
+}
+
 fn main() -> BoxResult<()> {
     tracing_subscriber::fmt::init();
 
@@ -67,11 +77,7 @@ fn main() -> BoxResult<()> {
     let quiet = args.get_flag(A_L_QUIET);
     let version = args.get_flag(A_L_VERSION);
     if version {
-        if !quiet {
-            print!("{} ", clap::crate_name!());
-        }
-        println!("{}", clap::crate_version!());
-        std::process::exit(0);
+        print_version_and_exit(quiet);
     }
 
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {

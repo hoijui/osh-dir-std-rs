@@ -22,6 +22,7 @@ publish = false
 clap = { version = "4.0", features = ["std", "cargo", "help"], default-features = false }
 codify = { git = "https://github.com/hoijui/codify-rs.git" }
 csv = "1.1"
+git-version = "0.3"
 once_cell = "1.16"
 regex = "1.7"
 relative-path = { version = "1.7", features = ["serde"] }

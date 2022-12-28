@@ -36,9 +36,12 @@ pub mod format;
 
 pub use coverage::Coverage;
 
+use git_version::git_version;
 use std::path::Path;
 
 pub type BoxResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
+
+pub const VERSION: &str = git_version!();
 
 /// Rates the current directory,
 /// using the default ignored paths regex.
