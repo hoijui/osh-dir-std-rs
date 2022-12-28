@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: 2021-2022 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+name: build
+
+on:
+  push:
+    branches: [ master, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'scripts/build'
+      - '.github/workflows/build.yml'
+  release:
+    types: [ published ]
+
+env:
+  RUST_BACKTRACE: 1
+
+jobs:
+  push_to_registry:
+    name: Compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out the repo"
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: "Install STOML (BASH TOML parser)"
+        run: scripts/install_stoml
+
+      - name: "Setup Python 3"
+        uses: actions/setup-python@v4
+        with:
+            python-version: '3.x'
+            cache: 'pip' # caching pip dependencies
+            cache-dependency-path: '.github/requirements-ci.txt'
+
+      - name: "Install the REUSE tool"
+        run: pip install reuse
+
+      - name: "Get the Rust toolchain"
+        uses: dtolnay/rust-toolchain@stable
+        with:
+            targets: x86_64-unknown-linux-musl
+            components: rustfmt, clippy
+
+      - name: "Smart caching for rust/cargo"
+        uses: Swatinem/rust-cache@v2
+
+      - name: "Build"
+        run: scripts/build
+
+      - name: "Test & Check"
+        run: scripts/test
+
