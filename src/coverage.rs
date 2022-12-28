@@ -10,10 +10,19 @@ use tracing::trace;
 /// Indicates which relative paths of all dirs and files in a project
 /// are covered by what parts of a specific dir standard.
 #[derive(Debug)]
-struct Coverage<'a> {
+pub struct Coverage<'a> {
+    /// Name of the standard that coverage was checked for
     std: &'static super::format::DirStd,
+    /// Number of viable paths in the input-dir.
+    /// These are all paths in the input dir,
+    /// minus the ignored ones.
     num_paths: usize,
+    /// The records in the checked standard
+    /// that matched one or more paths in the input,
+    /// together with all those matched paths.
     r#in: HashMap<&'static super::format::Rec<'static>, Vec<&'a RelativePath>>,
+    /// The viable paths in the input dir that did not match any record
+    /// of the checked standard.
     out: Vec<&'a RelativePath>,
 }
 
@@ -21,7 +30,7 @@ impl<'a> Coverage<'a> {
     /// Given a set of the relative paths of all dirs and files in a project,
     /// figures out which of them are covered by what parts
     /// of a given dir standard.
-    pub fn check<'b, T, S>(
+    pub fn new<'b, T, S>(
         dirs_and_files: T,
         std: &'static super::format::DirStd,
         ignored_paths: &Regex,
@@ -59,8 +68,32 @@ impl<'a> Coverage<'a> {
         rec_ratings
     }
 
+    /// Given a set of the relative paths of all dirs and files in a project,
+    /// for each of the known dir standards from
+    /// <https://github.com/hoijui/osh-dir-std/>,
+    /// calculate how likely it seems
+    /// that the project is following this standard.
+    pub fn all<'b, T, S>(
+        dirs_and_files: T,
+        ignored_paths: &Regex,
+    ) -> HashMap<&'static str, Coverage<'b>>
+    where
+        T: IntoIterator<Item = &'b S> + Copy,
+        S: AsRef<RelativePath> + 'b,
+    {
+        let mut coverages = HashMap::new();
+        for (std_name, std_records) in super::data::STDS.iter() {
+            trace!("");
+            trace!("std: {}", std_name);
+            let std_coverage = Coverage::new(dirs_and_files, std_records, ignored_paths);
+            coverages.insert(*std_name, std_coverage);
+        }
+        coverages
+    }
+
     /// Calculates how much the input listing adheres to the input dir standard.
     /// 0.0 means not at all, 1.0 means totally/fully.
+    #[must_use]
     pub fn rate(&self) -> f32 {
         let mut pos_rating = 0.0;
         let mut matches_records = false;
@@ -97,6 +130,7 @@ impl<'a> Coverage<'a> {
     /// Returns a list of the identified module(/parts) directories.
     /// In addition to these,
     /// we should also consider all dirs that contain an okh.toml file.
+    #[must_use]
     pub fn module_dirs(&self) -> Vec<&RelativePath> {
         let mut dirs = vec![];
         for (record, paths) in &self.r#in {
@@ -115,21 +149,22 @@ impl<'a> Coverage<'a> {
 /// <https://github.com/hoijui/osh-dir-std/>,
 /// calculate how likely it seems
 /// that the project is following this standard.
-pub fn rate_listing<'a, T, S>(
-    dirs_and_files: T,
-    ignored_paths: &Regex,
-) -> HashMap<&'static str, f32>
+pub fn rate_listing<'a, T, S>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<(&'static str, f32)>
 where
     T: IntoIterator<Item = &'a S> + Copy,
     S: AsRef<RelativePath> + 'a,
 {
-    let mut ratings = HashMap::new();
-    for (std_name, std_records) in super::data::STDS.iter() {
-        trace!("");
-        trace!("std: {}", std_name);
-        let std_coverage = Coverage::check(dirs_and_files, std_records, ignored_paths);
-        let rating = std_coverage.rate();
-        ratings.insert(*std_name, rating);
+    let mut ratings = vec![];
+    for (key, cov) in Coverage::all(dirs_and_files, ignored_paths) {
+        ratings.push((key, cov.rate()));
     }
+    // let mut ratings = HashMap::new();
+    // for (std_name, std_records) in super::data::STDS.iter() {
+    //     trace!("");
+    //     trace!("std: {}", std_name);
+    //     let std_coverage = Coverage::check(dirs_and_files, std_records, ignored_paths);
+    //     let rating = std_coverage.rate();
+    //     ratings.insert(*std_name, rating);
+    // }
     ratings
 }

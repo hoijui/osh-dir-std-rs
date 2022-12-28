@@ -29,12 +29,14 @@
 #![allow(clippy::fn_params_excessive_bools)]
 
 pub mod constants;
+mod coverage;
 pub mod data;
 pub mod file_listing;
 pub mod format;
-pub mod identifier;
 
-use std::{collections::HashMap, path::PathBuf};
+pub use coverage::Coverage;
+
+use std::path::Path;
 
 pub type BoxResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -46,9 +48,10 @@ pub type BoxResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
 /// The only possible errors that may happen,
 /// happen during the file-listing phase.
 /// See [`file_listing::dirs_and_files`] for details about these errors.
-pub fn rate() -> BoxResult<HashMap<&'static str, f32>> {
+pub fn rate<P: AsRef<Path>>(proj_repo: P) -> BoxResult<Vec<(&'static str, f32)>> {
     let ignored_paths = &constants::DEFAULT_IGNORED_PATHS;
-    let rating = file_listing::dirs_and_files(&PathBuf::from("."), ignored_paths)
-        .map(|ref lst| identifier::rate_listing(lst, ignored_paths))?;
+    let dirs_and_files = file_listing::dirs_and_files(proj_repo.as_ref(), ignored_paths);
+    // NOTE: Problem!!! RelativePath only supports UTF8 (?) -> very bad! .. we can't use it?
+    let rating = dirs_and_files.map(|ref lst| coverage::rate_listing(lst, ignored_paths))?;
     Ok(rating)
 }

@@ -7,10 +7,10 @@ name = "osh-dir-std"
 version = "0.1.0"
 edition = "2021"
 description = """
-    Code that helps humans and machines dealing with
-    the [OSH directory standard](
-    https://github.com/hoijui/osh-dir-std).
-    """
+Code that helps humans and machines deal with the
+[OSH directory standard](
+https://github.com/hoijui/osh-dir-std).
+"""
 repository = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]
 categories = ["standard", "specification", "osh"]
@@ -19,6 +19,7 @@ authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 publish = false
 
 [dependencies]
+clap = { version = "4.0", features = ["std", "cargo", "help"], default-features = false }
 codify = { git = "https://github.com/hoijui/codify-rs.git" }
 csv = "1.1"
 once_cell = "1.16"
@@ -28,6 +29,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_regex = "1.1"
 thiserror = "1.0"
 tracing = { version = "0.1", default-features = false }
+tracing-subscriber = { version = "0.3" }
 
 [build-dependencies]
 codify = { git = "https://github.com/hoijui/codify-rs.git" }

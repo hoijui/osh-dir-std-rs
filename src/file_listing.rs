@@ -38,12 +38,10 @@ pub fn dirs_and_files(
             let entry = entry_res?;
             let path = entry.path();
 
-            let rel_path =
-                RelativePathBuf::from_path(if let Ok(new_path) = path.strip_prefix(proj_root) {
-                    new_path
-                } else {
-                    proj_root
-                })?;
+            let rel_path = RelativePathBuf::from_path(
+                path.strip_prefix(proj_root)
+                    .map_or(proj_root, |new_path| new_path),
+            )?;
             if ignore_paths.is_match(rel_path.as_str()) {
                 continue;
             }
