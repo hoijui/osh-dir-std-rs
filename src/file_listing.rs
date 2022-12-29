@@ -17,7 +17,7 @@ pub enum Error {
     RelativePath(PathBuf),
 }
 
-/// Given a `proj_root`,
+/// Given a `root`,
 /// lists all the contained files and directories recursively.
 ///
 /// # Errors
@@ -29,16 +29,16 @@ pub enum Error {
 /// * The process lacks permissions to view the contents.
 /// * The path points at a non-directory file.
 /// * A path to a dir or file could not be converted to a relative path
-pub fn dirs_and_files(proj_root: &Path, ignore_paths: &Regex) -> Result<Vec<PathBuf>, Error> {
+pub fn dirs_and_files(root: &Path, ignore_paths: &Regex) -> Result<Vec<PathBuf>, Error> {
     let mut rel_listing = vec![];
-    let mut dirs_to_scan = vec![proj_root.to_path_buf()];
+    let mut dirs_to_scan = vec![root.to_path_buf()];
     while let Some(cur_dir) = dirs_to_scan.pop() {
         for entry_res in fs::read_dir(cur_dir)? {
             let entry = entry_res?;
             let path = entry.path();
 
             let rel_path = path
-                .strip_prefix(proj_root)
+                .strip_prefix(root)
                 .map_or_else(|_e| path.clone(), std::borrow::ToOwned::to_owned);
             if !rel_path.is_relative() {
                 return Err(Error::RelativePath(rel_path));
