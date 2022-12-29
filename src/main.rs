@@ -84,22 +84,25 @@ fn main() -> BoxResult<()> {
 
     let arg_matcher = cli::arg_matcher();
     let args = &arg_matcher.get_matches();
+
     let quiet = args.get_flag(A_L_QUIET);
     let version = args.get_flag(A_L_VERSION);
     if version {
         print_version_and_exit(quiet);
     }
 
+    let out_file = out_file(args, cli::SC_N_RATE);
+    let proj_dir = proj_dir(args);
+    let ignored_paths = ignored_paths(args);
+    let pretty = true; // TODO Make this a CLI arg
+
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
         match sub_com_name {
             cli::SC_N_RATE => {
                 let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
 
-                let out_file = out_file(sub_com_args, cli::SC_N_RATE);
-                let proj_dir = proj_dir(args);
-                let ignored_paths = ignored_paths(args);
-                let pretty = true; // TODO Make this a CLI arg
                 let rating = rate_listing(&dirs_and_files, &ignored_paths);
+
                 let json_rating = if pretty {
                     serde_json::to_string_pretty(&rating)
                 } else {
@@ -108,11 +111,9 @@ fn main() -> BoxResult<()> {
                 println!("{json_rating}");
             }
             cli::SC_N_MAP => {
-                let out_file = out_file(sub_com_args, cli::SC_N_MAP);
-                let proj_dir = proj_dir(args);
-                let ignored_paths = ignored_paths(args);
-                let all = sub_com_args.get_flag(cli::A_L_ALL);
                 let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
+                let all = sub_com_args.get_flag(cli::A_L_ALL);
+
                 let coverage: HashMap<String, _> = if all {
                     Coverage::all(&dirs_and_files, &ignored_paths)
                         .into_iter()
