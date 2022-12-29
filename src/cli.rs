@@ -50,11 +50,12 @@ pub const A_S_IGNORE_PATHS: char = 'i';
 
 fn arg_output() -> Arg {
     Arg::new(A_P_OUTPUT)
-        .help("The output file or dir path")
+        .help("The output file")
         .num_args(1)
         .value_name(A_P_OUTPUT)
         .value_hint(ValueHint::FilePath)
         .value_parser(value_parser!(std::path::PathBuf))
+        .value_name("JSON-FILE")
         .action(ArgAction::Set)
         .global(true)
 }
