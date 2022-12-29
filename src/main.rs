@@ -139,7 +139,7 @@ fn main() -> BoxResult<()> {
         }
     } else {
         error!(
-            "'{}' requires a subcommand but none was provided",
+            "'{}' requires a subcommand, but none was provided",
             clap::crate_name!()
         );
         cli::arg_matcher().print_help()?;
