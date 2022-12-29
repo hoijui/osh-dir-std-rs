@@ -131,6 +131,8 @@ fn main() -> BoxResult<()> {
                     .into_iter()
                     .collect()
                 };
+
+                // TODO Output the coverage/mapping in JSON
                 todo!();
             }
             _ => {
