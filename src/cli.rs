@@ -61,7 +61,7 @@ fn arg_output() -> Arg {
         .value_hint(ValueHint::FilePath)
         .value_parser(value_parser!(std::path::PathBuf))
         .action(ArgAction::Set)
-        .required(false)
+        .global(true)
 }
 
 // fn arg_recursive() -> Arg {
@@ -78,6 +78,7 @@ fn arg_version() -> Arg {
         .short(A_S_VERSION)
         .long(A_L_VERSION)
         .action(ArgAction::SetTrue)
+        .global(true)
 }
 
 fn arg_quiet() -> Arg {
@@ -86,6 +87,7 @@ fn arg_quiet() -> Arg {
         .short(A_S_QUIET)
         .long(A_L_QUIET)
         .action(ArgAction::SetTrue)
+        .global(true)
 }
 
 fn arg_project_dir() -> Arg {
@@ -99,6 +101,7 @@ fn arg_project_dir() -> Arg {
         .value_hint(ValueHint::DirPath)
         .action(ArgAction::Set)
         .default_value(".")
+        .global(true)
 }
 
 fn subcom_rate() -> Command {
