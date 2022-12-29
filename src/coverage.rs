@@ -12,18 +12,18 @@ use tracing::trace;
 #[derive(Debug)]
 pub struct Coverage<'a> {
     /// Name of the standard that coverage was checked for
-    std: &'static super::format::DirStd,
+    pub std: &'static super::format::DirStd,
     /// Number of viable paths in the input-dir.
     /// These are all paths in the input dir,
     /// minus the ignored ones.
-    num_paths: usize,
+    pub num_paths: usize,
     /// The records in the checked standard
     /// that matched one or more paths in the input,
     /// together with all those matched paths.
-    r#in: HashMap<&'static super::format::Rec<'static>, Vec<&'a RelativePath>>,
+    pub r#in: HashMap<&'static super::format::Rec<'static>, Vec<&'a RelativePath>>,
     /// The viable paths in the input dir that did not match any record
     /// of the checked standard.
-    out: Vec<&'a RelativePath>,
+    pub out: Vec<&'a RelativePath>,
 }
 
 impl<'a> Coverage<'a> {

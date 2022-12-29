@@ -31,30 +31,16 @@
 pub mod constants;
 mod coverage;
 pub mod data;
+mod evaluation;
 pub mod file_listing;
 pub mod format;
 
 pub use coverage::Coverage;
+pub use evaluation::rate_dir;
+pub use evaluation::Rating;
 
 use git_version::git_version;
-use std::path::Path;
 
 pub type BoxResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 pub const VERSION: &str = git_version!();
-
-/// Rates the current directory,
-/// using the default ignored paths regex.
-///
-/// # Errors
-///
-/// The only possible errors that may happen,
-/// happen during the file-listing phase.
-/// See [`file_listing::dirs_and_files`] for details about these errors.
-pub fn rate<P: AsRef<Path>>(proj_repo: P) -> BoxResult<Vec<(&'static str, f32)>> {
-    let ignored_paths = &constants::DEFAULT_IGNORED_PATHS;
-    let dirs_and_files = file_listing::dirs_and_files(proj_repo.as_ref(), ignored_paths);
-    // NOTE: Problem!!! RelativePath only supports UTF8 (?) -> very bad! .. we can't use it?
-    let rating = dirs_and_files.map(|ref lst| coverage::rate_listing(lst, ignored_paths))?;
-    Ok(rating)
-}

@@ -35,7 +35,7 @@ use std::{collections::HashMap, env, path::PathBuf, str::FromStr};
 
 use clap::ArgMatches;
 use cli::{A_L_QUIET, A_L_VERSION};
-use osh_dir_std::{constants, data::STDS, rate, BoxResult, Coverage};
+use osh_dir_std::{constants, data::STDS, rate_dir, BoxResult, Coverage};
 use tracing::error;
 
 fn proj_dir(args: &ArgMatches) -> PathBuf {
@@ -93,8 +93,14 @@ fn main() -> BoxResult<()> {
                 // let cont = sub_com_args.is_present(cli::A_L_CONTINUE_ON_ERROR);
                 // let overwrite = sub_com_args.is_present(cli::A_L_OVERWRITE);
                 let proj_dir = proj_dir(args);
-                let rating = rate(proj_dir)?;
-                println!("{rating:#?}");
+                let rating = rate_dir(proj_dir, None)?; // TODO take ignore_paths(: regex) (2nd arg) form CLI arg!
+                let pretty = true; // TODO Make this a CLI arg
+                let json_rating = if pretty {
+                    serde_json::to_string_pretty(&rating)
+                } else {
+                    serde_json::to_string(&rating)
+                }?;
+                println!("{json_rating}");
             }
             cli::SC_N_MAP => {
                 let out_file = out_file(sub_com_args, cli::SC_N_MAP);
