@@ -59,7 +59,7 @@ fn arg_output() -> Arg {
 
 fn arg_version() -> Arg {
     Arg::new(A_L_VERSION)
-        .help("Print version information and exit. May be combined with --quiet, to really only output the version string.")
+        .help(formatcp!("Print version information and exit. May be combined with -{A_S_QUIET},--{A_L_QUIET}, to really only output the version string."))
         .short(A_S_VERSION)
         .long(A_L_VERSION)
         .action(ArgAction::SetTrue)
