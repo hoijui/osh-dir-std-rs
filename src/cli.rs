@@ -119,6 +119,7 @@ fn arg_standard() -> Arg {
         .short(A_S_STANDARD)
         .long(A_L_STANDARD)
         .value_parser(STD_NAMES)
+        .value_name("STD")
         .conflicts_with(A_L_ALL)
         .action(ArgAction::Set)
 }
