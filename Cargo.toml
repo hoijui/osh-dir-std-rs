@@ -8,8 +8,8 @@ version = "0.1.0"
 edition = "2021"
 description = """
 Code that helps humans and machines deal with the
-[OSH directory standard](
-https://github.com/hoijui/osh-dir-std).
+*OSH directory standard*:
+<https://github.com/hoijui/osh-dir-std>
 """
 repository = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]
