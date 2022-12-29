@@ -93,11 +93,6 @@ fn main() -> BoxResult<()> {
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
         match sub_com_name {
             cli::SC_N_RATE => {
-                // let input_path = sub_com
-                //     .value_of(cli::A_P_INPUT)
-                //     .map(Path::new)
-                //     .map(Path::to_path_buf)
-                //     .unwrap();
                 let out_file = out_file(sub_com_args, cli::SC_N_RATE);
                 let proj_dir = proj_dir(args);
                 let ignored_paths = ignored_paths(args);

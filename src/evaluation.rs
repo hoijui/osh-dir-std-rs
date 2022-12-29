@@ -72,14 +72,6 @@ where
             factor: cov.rate(),
         });
     }
-    // let mut ratings = HashMap::new();
-    // for (std_name, std_records) in super::data::STDS.iter() {
-    //     trace!("");
-    //     trace!("std: {}", std_name);
-    //     let std_coverage = Coverage::check(dirs_and_files, std_records, ignored_paths);
-    //     let rating = std_coverage.rate();
-    //     ratings.insert(*std_name, rating);
-    // }
     ratings
 }
 

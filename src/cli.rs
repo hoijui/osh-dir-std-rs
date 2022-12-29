@@ -12,6 +12,7 @@ use std::env;
 pub const SC_N_RATE: &str = "rate";
 
 // pub const A_P_INPUT: &str = "INPUT";
+
 pub const A_P_OUTPUT: &str = "OUTPUT-FILE";
 pub const A_P_D_OUTPUT: &str = ".osh-dir-std";
 
@@ -35,14 +36,6 @@ pub const A_S_ALL: char = 'a';
 pub const A_L_IGNORE_PATHS: &str = "ignore-paths-regex";
 pub const A_S_IGNORE_PATHS: char = 'i';
 
-// pub const A_L_CONTINUE_ON_ERROR: &str = "continue";
-// pub const A_S_CONTINUE_ON_ERROR: char = 'c';
-
-// pub const A_L_OVERWRITE: &str = "overwrite";
-// pub const A_S_OVERWRITE: char = 'o';
-
-// pub const SC_N_GENERATE: &str = "gen";
-
 // fn arg_input() -> Arg {
 //     Arg::new(A_P_INPUT)
 //         .help("The input file or dir path")
@@ -63,14 +56,6 @@ fn arg_output() -> Arg {
         .action(ArgAction::Set)
         .global(true)
 }
-
-// fn arg_recursive() -> Arg {
-//     Arg::new(A_L_RECURSIVE)
-//         .help("If the input path is a directory, search for input files recursively")
-//         .short(A_S_RECURSIVE)
-//         .long(A_L_RECURSIVE)
-//         .required(false)
-// }
 
 fn arg_version() -> Arg {
     Arg::new(A_L_VERSION)
@@ -151,31 +136,6 @@ fn arg_ignore_paths() -> Arg {
         .action(ArgAction::Set)
         .global(true)
 }
-
-// fn arg_continue_on_error() -> Arg {
-//     Arg::new(A_L_CONTINUE_ON_ERROR)
-//         .help("If the input path is a directory, continue processing further files, even after an error")
-//         .short(A_S_CONTINUE_ON_ERROR)
-//         .long(A_L_CONTINUE_ON_ERROR)
-//         .required(false)
-// }
-
-// fn arg_overwrite() -> Arg {
-//     Arg::new(A_L_OVERWRITE)
-//         .help("If the outout file alreayd exists, overwrite it, instead of skipping the conversion")
-//         .short(A_S_OVERWRITE)
-//         .long(A_L_OVERWRITE)
-//         .required(false)
-// }
-
-// fn subcom_validate() -> App {
-//     App::new(SC_N_VALIDATE)
-//     .about("Validates manifest files for validity using JSON Schema (currently supports OKH-v1 and OKH-LOSH)")
-//     .arg(arg_input().index(1))
-//     .arg(arg_okhv())
-//     .arg(arg_recursive())
-//     .arg(arg_continue_on_error())
-// }
 
 pub fn arg_matcher() -> Command {
     command!()
