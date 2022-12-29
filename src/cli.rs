@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use clap::{command, value_parser, Arg, ArgAction, Command, ValueHint};
+use const_format::formatcp;
 use osh_dir_std::data::STD_NAMES;
+use regex::Regex;
 // use const_format::formatcp;
 use std::env;
 
@@ -29,6 +31,9 @@ pub const A_S_STANDARD: char = 's';
 
 pub const A_L_ALL: &str = "all";
 pub const A_S_ALL: char = 'a';
+
+pub const A_L_IGNORE_PATHS: &str = "ignore-paths-regex";
+pub const A_S_IGNORE_PATHS: char = 'i';
 
 // pub const A_L_CONTINUE_ON_ERROR: &str = "continue";
 // pub const A_S_CONTINUE_ON_ERROR: char = 'c';
@@ -132,6 +137,17 @@ fn arg_all() -> Arg {
         .action(ArgAction::SetTrue)
 }
 
+fn arg_ignore_paths() -> Arg {
+    Arg::new(A_L_IGNORE_PATHS)
+        .help(formatcp!("Regex capturing all paths to be ignored, relative to -{A_S_PROJECT_DIR},--{A_L_PROJECT_DIR}"))
+        .num_args(1)
+        .short(A_S_IGNORE_PATHS)
+        .long(A_L_IGNORE_PATHS)
+        .value_parser(value_parser!(Regex))
+        .action(ArgAction::Set)
+        .global(true)
+}
+
 // fn arg_continue_on_error() -> Arg {
 //     Arg::new(A_L_CONTINUE_ON_ERROR)
 //         .help("If the input path is a directory, continue processing further files, even after an error")
@@ -168,6 +184,7 @@ pub fn arg_matcher() -> Command {
         .arg(arg_version())
         .arg(arg_quiet())
         .arg(arg_project_dir())
+        .arg(arg_ignore_paths())
         .subcommand(subcom_rate())
         .subcommand(subcom_map())
 }

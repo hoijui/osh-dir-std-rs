@@ -36,6 +36,7 @@ use std::{collections::HashMap, env, path::PathBuf, str::FromStr};
 use clap::ArgMatches;
 use cli::{A_L_QUIET, A_L_VERSION};
 use osh_dir_std::{constants, data::STDS, rate_dir, BoxResult, Coverage};
+use regex::Regex;
 use tracing::error;
 
 fn proj_dir(args: &ArgMatches) -> PathBuf {
@@ -43,8 +44,17 @@ fn proj_dir(args: &ArgMatches) -> PathBuf {
         .get_one::<PathBuf>(cli::A_L_PROJECT_DIR)
         .cloned()
         .unwrap_or_else(PathBuf::new);
-    // log::debug!("Using repo path '{:#?}'.", &proj_dir);
+    // log::debug!("Using repo path: '{:#?}'", &proj_dir);
     proj_dir
+}
+
+fn ignored_paths(args: &ArgMatches) -> Regex {
+    let ignored_paths = args
+        .get_one::<Regex>(cli::A_L_IGNORE_PATHS)
+        .cloned()
+        .unwrap_or(constants::DEFAULT_IGNORED_PATHS.to_owned());
+    // log::debug!("Using ignore paths regex: '{:#?}'", &ignored_paths);
+    ignored_paths
 }
 
 fn out_file(args: &ArgMatches, out_type: &str) -> PathBuf {
@@ -89,11 +99,9 @@ fn main() -> BoxResult<()> {
                 //     .map(Path::to_path_buf)
                 //     .unwrap();
                 let out_file = out_file(sub_com_args, cli::SC_N_RATE);
-                // let recursive = sub_com_args.is_present(cli::A_L_RECURSIVE);
-                // let cont = sub_com_args.is_present(cli::A_L_CONTINUE_ON_ERROR);
-                // let overwrite = sub_com_args.is_present(cli::A_L_OVERWRITE);
                 let proj_dir = proj_dir(args);
-                let rating = rate_dir(proj_dir, None)?; // TODO take ignore_paths(: regex) (2nd arg) form CLI arg!
+                let ignored_paths = ignored_paths(args);
+                let rating = rate_dir(proj_dir, Some(&ignored_paths))?;
                 let pretty = true; // TODO Make this a CLI arg
                 let json_rating = if pretty {
                     serde_json::to_string_pretty(&rating)
@@ -105,11 +113,11 @@ fn main() -> BoxResult<()> {
             cli::SC_N_MAP => {
                 let out_file = out_file(sub_com_args, cli::SC_N_MAP);
                 let proj_dir = proj_dir(args);
-                let ignored_paths = &constants::DEFAULT_IGNORED_PATHS;
+                let ignored_paths = ignored_paths(args);
                 let all = sub_com_args.get_flag(cli::A_L_ALL);
-                let dirs_and_files = file_listing::dirs_and_files(&proj_dir, ignored_paths)?;
+                let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
                 let coverage: HashMap<String, _> = if all {
-                    Coverage::all(&dirs_and_files, ignored_paths)
+                    Coverage::all(&dirs_and_files, &ignored_paths)
                         .into_iter()
                         .map(|(k, v)| (k.to_owned(), v))
                         .collect()
@@ -123,7 +131,7 @@ fn main() -> BoxResult<()> {
                         .expect("Name was checked by clap, so can not fail");
                     vec![(
                         standard_name,
-                        Coverage::new(&dirs_and_files, std, ignored_paths),
+                        Coverage::new(&dirs_and_files, std, &ignored_paths),
                     )]
                     .into_iter()
                     .collect()
