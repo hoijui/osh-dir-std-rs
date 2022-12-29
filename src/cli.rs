@@ -104,13 +104,11 @@ fn arg_project_dir() -> Arg {
 fn subcom_rate() -> Command {
     Command::new(SC_N_RATE)
         .about("Rates a project repo directory with all known OSH dir standards, indicating for each standard how well it fits")
-        .arg(arg_output().index(1))
 }
 
 fn subcom_map() -> Command {
     Command::new(SC_N_MAP)
         .about("Maps project directories and files to parts of the standard")
-        .arg(arg_output().index(1))
         .arg(arg_standard())
         .arg(arg_all())
 }
@@ -181,6 +179,7 @@ pub fn arg_matcher() -> Command {
         .disable_version_flag(true)
         .disable_help_flag(false)
         .bin_name(clap::crate_name!())
+        .arg(arg_output().index(1))
         .arg(arg_version())
         .arg(arg_quiet())
         .arg(arg_project_dir())
