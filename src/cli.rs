@@ -180,7 +180,7 @@ pub fn arg_matcher() -> Command {
         .subcommand_negates_reqs(true)
         .disable_version_flag(true)
         .disable_help_flag(false)
-        .bin_name("okh-tool")
+        .bin_name(clap::crate_name!())
         .arg(arg_version())
         .arg(arg_quiet())
         .arg(arg_project_dir())
