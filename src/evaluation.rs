@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+use std::path::Path;
+
 use regex::Regex;
-use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
 use tracing::trace;
 
@@ -62,7 +63,7 @@ impl Rating {
 pub fn rate_listing<'a, T, S>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<Rating>
 where
     T: IntoIterator<Item = &'a S> + Copy,
-    S: AsRef<RelativePath> + 'a,
+    S: AsRef<Path> + 'a,
 {
     let mut ratings = vec![];
     for (key, cov) in Coverage::all(dirs_and_files, ignored_paths) {

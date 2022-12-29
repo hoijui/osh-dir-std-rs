@@ -190,7 +190,6 @@ dependencies = [
  "git-version",
  "once_cell",
  "regex",
- "relative-path",
  "serde",
  "serde_json",
  "serde_regex",
@@ -257,15 +256,6 @@ name = "regex-syntax"
 version = "0.6.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
-
-[[package]]
-name = "relative-path"
-version = "1.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0df32d82cedd1499386877b062ebe8721f806de80b08d183c70184ef17dd1d42"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "ryu"

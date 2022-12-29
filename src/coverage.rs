@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use regex::Regex;
-use relative_path::RelativePath;
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 use tracing::trace;
 
 /// Indicates which relative paths of all dirs and files in a project
@@ -20,10 +19,10 @@ pub struct Coverage<'a> {
     /// The records in the checked standard
     /// that matched one or more paths in the input,
     /// together with all those matched paths.
-    pub r#in: HashMap<&'static super::format::Rec<'static>, Vec<&'a RelativePath>>,
+    pub r#in: HashMap<&'static super::format::Rec<'static>, Vec<&'a Path>>,
     /// The viable paths in the input dir that did not match any record
     /// of the checked standard.
-    pub out: Vec<&'a RelativePath>,
+    pub out: Vec<&'a Path>,
 }
 
 impl<'a> Coverage<'a> {
@@ -37,7 +36,7 @@ impl<'a> Coverage<'a> {
     ) -> Coverage<'b>
     where
         T: IntoIterator<Item = &'b S> + Copy,
-        S: AsRef<RelativePath> + 'b,
+        S: AsRef<Path> + 'b,
     {
         let mut rec_ratings = Coverage {
             std,
@@ -46,13 +45,16 @@ impl<'a> Coverage<'a> {
             out: Vec::new(),
         };
         for dir_or_file in dirs_and_files {
-            if ignored_paths.is_match(dir_or_file.as_ref().as_str()) {
+            if ignored_paths.is_match(dir_or_file.as_ref().to_string_lossy().as_ref()) {
                 continue;
             }
             rec_ratings.num_paths += 1;
             let mut matched = false;
             for record in &std.records {
-                if record.regex.is_match(dir_or_file.as_ref().as_str()) {
+                if record
+                    .regex
+                    .is_match(dir_or_file.as_ref().to_string_lossy().as_ref())
+                {
                     rec_ratings
                         .r#in
                         .entry(record)
@@ -79,7 +81,7 @@ impl<'a> Coverage<'a> {
     ) -> HashMap<&'static str, Coverage<'b>>
     where
         T: IntoIterator<Item = &'b S> + Copy,
-        S: AsRef<RelativePath> + 'b,
+        S: AsRef<Path> + 'b,
     {
         let mut coverages = HashMap::new();
         for (std_name, std_records) in super::data::STDS.iter() {
@@ -131,7 +133,7 @@ impl<'a> Coverage<'a> {
     /// In addition to these,
     /// we should also consider all dirs that contain an okh.toml file.
     #[must_use]
-    pub fn module_dirs(&self) -> Vec<&RelativePath> {
+    pub fn module_dirs(&self) -> Vec<&Path> {
         let mut dirs = vec![];
         for (record, paths) in &self.r#in {
             if record.module {
@@ -152,7 +154,7 @@ impl<'a> Coverage<'a> {
 pub fn rate_listing<'a, T, S>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<(&'static str, f32)>
 where
     T: IntoIterator<Item = &'a S> + Copy,
-    S: AsRef<RelativePath> + 'a,
+    S: AsRef<Path> + 'a,
 {
     let mut ratings = vec![];
     for (key, cov) in Coverage::all(dirs_and_files, ignored_paths) {

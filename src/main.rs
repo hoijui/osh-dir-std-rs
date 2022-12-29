@@ -52,7 +52,7 @@ fn ignored_paths(args: &ArgMatches) -> Regex {
     let ignored_paths = args
         .get_one::<Regex>(cli::A_L_IGNORE_PATHS)
         .cloned()
-        .unwrap_or(constants::DEFAULT_IGNORED_PATHS.to_owned());
+        .unwrap_or_else(|| constants::DEFAULT_IGNORED_PATHS.to_owned());
     // log::debug!("Using ignore paths regex: '{:#?}'", &ignored_paths);
     ignored_paths
 }
