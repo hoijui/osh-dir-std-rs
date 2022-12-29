@@ -35,7 +35,7 @@ use std::{collections::HashMap, env, path::PathBuf, str::FromStr};
 
 use clap::ArgMatches;
 use cli::{A_L_QUIET, A_L_VERSION};
-use osh_dir_std::{constants, data::STDS, rate_dir, BoxResult, Coverage};
+use osh_dir_std::{constants, data::STDS, rate_listing, BoxResult, Coverage};
 use regex::Regex;
 use tracing::error;
 
@@ -93,11 +93,13 @@ fn main() -> BoxResult<()> {
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
         match sub_com_name {
             cli::SC_N_RATE => {
+                let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
+
                 let out_file = out_file(sub_com_args, cli::SC_N_RATE);
                 let proj_dir = proj_dir(args);
                 let ignored_paths = ignored_paths(args);
-                let rating = rate_dir(proj_dir, Some(&ignored_paths))?;
                 let pretty = true; // TODO Make this a CLI arg
+                let rating = rate_listing(&dirs_and_files, &ignored_paths);
                 let json_rating = if pretty {
                     serde_json::to_string_pretty(&rating)
                 } else {

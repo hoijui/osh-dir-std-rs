@@ -32,11 +32,10 @@ pub mod constants;
 mod coverage;
 pub mod data;
 mod evaluation;
-pub mod file_listing;
 pub mod format;
 
 pub use coverage::Coverage;
-pub use evaluation::rate_dir;
+pub use evaluation::rate_listing;
 pub use evaluation::Rating;
 
 use git_version::git_version;

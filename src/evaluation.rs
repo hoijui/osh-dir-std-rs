@@ -5,10 +5,9 @@
 use regex::Regex;
 use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
 use tracing::trace;
 
-use crate::{constants, file_listing, BoxResult, Coverage};
+use crate::Coverage;
 
 #[derive(Serialize, Deserialize)]
 pub struct Rating {
@@ -73,23 +72,4 @@ where
         });
     }
     ratings
-}
-
-/// Rates the current directory,
-/// using the default ignored paths regex.
-///
-/// # Errors
-///
-/// The only possible errors that may happen,
-/// happen during the file-listing phase.
-/// See [`file_listing::dirs_and_files`] for details about these errors.
-pub fn rate_dir<P: AsRef<Path>>(
-    proj_repo: P,
-    ignore_paths: Option<&Regex>,
-) -> BoxResult<Vec<Rating>> {
-    let ignored_paths = ignore_paths.unwrap_or(&constants::DEFAULT_IGNORED_PATHS);
-    let dirs_and_files = file_listing::dirs_and_files(proj_repo.as_ref(), ignored_paths);
-    // NOTE: Problem!!! RelativePath only supports UTF8 (?) -> very bad! .. we can't use it?
-    let rating = dirs_and_files.map(|ref lst| rate_listing(lst, ignored_paths))?;
-    Ok(rating)
 }
