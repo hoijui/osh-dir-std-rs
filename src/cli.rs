@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use clap::{command, value_parser, Arg, ArgAction, Command, ValueHint};
+use clap::{command, value_parser, Arg, ArgAction, ArgGroup, Command, ValueHint};
 use const_format::formatcp;
 use osh_dir_std::data::STD_NAMES;
 use regex::Regex;
@@ -111,6 +111,11 @@ fn subcom_map() -> Command {
         .about("Maps project directories and files to parts of the standard")
         .arg(arg_standard())
         .arg(arg_all())
+        .group(
+            ArgGroup::new("standard")
+                .args([A_L_STANDARD, A_L_ALL])
+                .required(true),
+        )
 }
 
 fn arg_standard() -> Arg {
@@ -120,7 +125,6 @@ fn arg_standard() -> Arg {
         .short(A_S_STANDARD)
         .long(A_L_STANDARD)
         .value_parser(STD_NAMES)
-        .required(true)
         .conflicts_with(A_L_ALL)
         .action(ArgAction::Set)
 }
@@ -130,7 +134,6 @@ fn arg_all() -> Arg {
         .help("Check coverage versus all OSH directory standards")
         .short(A_S_ALL)
         .long(A_L_ALL)
-        .required(true)
         .conflicts_with(A_L_STANDARD)
         .action(ArgAction::SetTrue)
 }
