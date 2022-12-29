@@ -9,6 +9,8 @@ use regex::Regex;
 // use const_format::formatcp;
 use std::env;
 
+use crate::constants;
+
 pub const SC_N_RATE: &str = "rate";
 
 // pub const A_P_INPUT: &str = "INPUT";
@@ -128,11 +130,17 @@ fn arg_all() -> Arg {
 
 fn arg_ignore_paths() -> Arg {
     Arg::new(A_L_IGNORE_PATHS)
-        .help(formatcp!("Regex capturing all paths to be ignored, relative to -{A_S_PROJECT_DIR},--{A_L_PROJECT_DIR}"))
+        .help(format!(
+            "Paths to be ignored [default: '{}']",
+            constants::DEFAULT_IGNORED_PATHS.as_str()))
+        .long_help(format!(
+            "Regex capturing all paths to be ignored, relative to -{A_S_PROJECT_DIR},--{A_L_PROJECT_DIR}. [default: '{}']",
+            constants::DEFAULT_IGNORED_PATHS.as_str()))
         .num_args(1)
         .short(A_S_IGNORE_PATHS)
         .long(A_L_IGNORE_PATHS)
         .value_parser(value_parser!(Regex))
+        .value_name("REGEX")
         .action(ArgAction::Set)
         .global(true)
 }
