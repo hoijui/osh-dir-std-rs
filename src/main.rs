@@ -91,7 +91,6 @@ fn main() -> BoxResult<()> {
         print_version_and_exit(quiet);
     }
 
-    let out_file = out_file(args, cli::SC_N_RATE);
     let proj_dir = proj_dir(args);
     let ignored_paths = ignored_paths(args);
     let pretty = true; // TODO Make this a CLI arg
@@ -99,6 +98,7 @@ fn main() -> BoxResult<()> {
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
         match sub_com_name {
             cli::SC_N_RATE => {
+                let out_file = out_file(args, sub_com_name);
                 let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
 
                 let rating = rate_listing(&dirs_and_files, &ignored_paths);
@@ -111,6 +111,7 @@ fn main() -> BoxResult<()> {
                 println!("{json_rating}");
             }
             cli::SC_N_MAP => {
+                let out_file = out_file(args, sub_com_name);
                 let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
                 let all = sub_com_args.get_flag(cli::A_L_ALL);
 
