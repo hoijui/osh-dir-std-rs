@@ -4,7 +4,7 @@
 
 use clap::{command, value_parser, Arg, ArgAction, ArgGroup, Command, ValueHint};
 use const_format::formatcp;
-use osh_dir_std::data::STD_NAMES;
+use osh_dir_std::{constants::PROJECT_ISSUES_URL, data::STD_NAMES};
 use regex::Regex;
 // use const_format::formatcp;
 use std::env;
@@ -149,6 +149,9 @@ pub fn arg_matcher() -> Command {
         .disable_version_flag(true)
         .disable_help_flag(false)
         .bin_name(clap::crate_name!())
+        .before_help(format!(
+            "Please leave feedback of any kind here (including bug reports):\n<{PROJECT_ISSUES_URL}>"
+        ))
         .arg(arg_output().index(1))
         .arg(arg_version())
         .arg(arg_quiet())

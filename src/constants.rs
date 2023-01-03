@@ -7,3 +7,5 @@ use regex::Regex;
 
 pub static DEFAULT_IGNORED_PATHS: Lazy<Regex> =
     Lazy::new(|| Regex::new("^(.git|.gitignore|.gitmodule)$").unwrap());
+
+pub const PROJECT_ISSUES_URL: &str = "https://github.com/hoijui/osh-dir-std-rs/issues";
