@@ -13,8 +13,6 @@ use crate::constants;
 
 pub const SC_N_RATE: &str = "rate";
 
-// pub const A_P_INPUT: &str = "INPUT";
-
 pub const A_P_OUTPUT: &str = "OUTPUT-FILE";
 pub const A_P_D_OUTPUT: &str = ".osh-dir-std";
 
@@ -37,16 +35,6 @@ pub const A_S_ALL: char = 'a';
 
 pub const A_L_IGNORE_PATHS: &str = "ignore-paths-regex";
 pub const A_S_IGNORE_PATHS: char = 'i';
-
-// fn arg_input() -> Arg {
-//     Arg::new(A_P_INPUT)
-//         .help("The input file or dir path")
-//         .num_args(1)
-//         .value_name("INPUT")
-// .value_hint(ValueHint::DirPath)
-// .value_parser(value_parser!(std::path::PathBuf))
-//         .required(true)
-// }
 
 fn arg_output() -> Arg {
     Arg::new(A_P_OUTPUT)
