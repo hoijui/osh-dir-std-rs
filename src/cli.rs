@@ -159,6 +159,22 @@ pub fn arg_matcher() -> Command {
         .before_help(format!(
             "Please leave feedback of any kind here (including bug reports):\n<{PROJECT_ISSUES_URL}>"
         ))
+        .after_help("Please use --help for Examples.")
+        .after_long_help(format!(
+            r#"Examples:
+  $ # 1. Lists git tracked files and directories,
+  $ #    and rates them with all the known standards:
+  $ ls -1 -d $(git ls-tree -rt HEAD --name-only) \
+        | {} rate
+
+  $ # 2. Lists git tracked files and directories,
+  $ #    and maps them to the default standard:
+  $ ls -1 -d $(git ls-tree -rt HEAD --name-only) \
+        | {} map
+"#,
+            clap::crate_name!(),
+            clap::crate_name!(),
+        ))
         .arg(arg_output().index(1))
         .arg(arg_version())
         .arg(arg_quiet())
