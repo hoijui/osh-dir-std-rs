@@ -30,6 +30,14 @@ This consists of two parts:
 
 ## Example Usage
 
+### CLI
+
+```shell
+ls -1 -d $(git ls-tree -rt HEAD --name-only) | osh-dir-std rate
+```
+
+### Library
+
 ``` rust
 use osh_dir_std::{self, format::Rec};
 

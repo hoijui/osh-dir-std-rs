@@ -29,24 +29,14 @@
 #![allow(clippy::fn_params_excessive_bools)]
 
 mod cli;
-mod file_listing;
 
-use std::{collections::HashMap, env, path::PathBuf, str::FromStr};
+use std::{collections::HashMap, env, io, path::PathBuf, str::FromStr};
 
 use clap::ArgMatches;
-use cli::{A_L_QUIET, A_L_VERSION};
+use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
 use osh_dir_std::{constants, data::STDS, rate_listing, BoxResult, Coverage};
 use regex::Regex;
 use tracing::error;
-
-fn proj_dir(args: &ArgMatches) -> PathBuf {
-    let proj_dir = args
-        .get_one::<PathBuf>(cli::A_L_PROJECT_DIR)
-        .cloned()
-        .unwrap_or_else(PathBuf::new);
-    // log::debug!("Using repo path: '{:#?}'", &proj_dir);
-    proj_dir
-}
 
 fn ignored_paths(args: &ArgMatches) -> Regex {
     let ignored_paths = args
@@ -79,6 +69,13 @@ fn print_version_and_exit(quiet: bool) {
     std::process::exit(0);
 }
 
+fn line_to_path_res(res_line: io::Result<String>) -> BoxResult<PathBuf> {
+    res_line.map_or_else(
+        |err| Err(err.into()),
+        |line| PathBuf::from_str(&line).map_err(std::convert::Into::into),
+    )
+}
+
 fn main() -> BoxResult<()> {
     tracing_subscriber::fmt::init();
 
@@ -91,15 +88,22 @@ fn main() -> BoxResult<()> {
         print_version_and_exit(quiet);
     }
 
-    let proj_dir = proj_dir(args);
+    let input_listing = args
+        .get_one::<String>(A_L_INPUT_LISTING)
+        .map(|path_str| path_str as &str);
     let ignored_paths = ignored_paths(args);
     let pretty = true; // TODO Make this a CLI arg
 
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
+        let mut listing_strm = cli_utils::create_input_reader(input_listing)?;
+        let lines_iter = cli_utils::lines_iterator(&mut listing_strm, true);
+        let dirs_and_files = lines_iter
+            .map(line_to_path_res)
+            .collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
+
         match sub_com_name {
             cli::SC_N_RATE => {
                 let out_file = out_file(args, sub_com_name);
-                let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
 
                 let rating = rate_listing(&dirs_and_files, &ignored_paths);
 
@@ -112,7 +116,6 @@ fn main() -> BoxResult<()> {
             }
             cli::SC_N_MAP => {
                 let out_file = out_file(args, sub_com_name);
-                let dirs_and_files = file_listing::dirs_and_files(&proj_dir, &ignored_paths)?;
                 let all = sub_com_args.get_flag(cli::A_L_ALL);
 
                 let coverage: HashMap<String, _> = if all {

@@ -20,6 +20,7 @@ publish = false
 
 [dependencies]
 clap = { version = "4.0", features = ["std", "cargo", "help"], default-features = false }
+cli-utils = { version = "0.2", git = "https://github.com/hoijui/cli-utils-rs.git" }
 codify = { git = "https://github.com/hoijui/codify-rs.git" }
 const_format = "0.2"
 csv = "1.1"

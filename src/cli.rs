@@ -22,8 +22,8 @@ pub const A_S_VERSION: char = 'V';
 pub const A_L_QUIET: &str = "quiet";
 pub const A_S_QUIET: char = 'q';
 
-pub const A_L_PROJECT_DIR: &str = "proj-dir";
-pub const A_S_PROJECT_DIR: char = 'C';
+pub const A_L_INPUT_LISTING: &str = "listing";
+pub const A_S_INPUT_LISTING: char = 'I';
 
 pub const SC_N_MAP: &str = "map";
 
@@ -70,17 +70,22 @@ fn arg_quiet() -> Arg {
         .global(true)
 }
 
-fn arg_project_dir() -> Arg {
-    Arg::new(A_L_PROJECT_DIR)
-        .help("Path of the project repo to check")
-        .short(A_S_PROJECT_DIR)
-        .long(A_L_PROJECT_DIR)
+fn arg_input_listing() -> Arg {
+    Arg::new(A_L_INPUT_LISTING)
+        .help("Dirs and files listing to check")
+        .long_help(
+            "Dirs and files listing to check coverage for. \
+Either the path to a file with new-line separated paths, \
+or '-' or no argument, meaning the same format is expected on stdin.",
+        )
+        .short(A_S_INPUT_LISTING)
+        .long(A_L_INPUT_LISTING)
         .num_args(1)
         .value_parser(value_parser!(std::path::PathBuf))
-        .value_name("DIR")
+        .value_name("FILE")
         .value_hint(ValueHint::DirPath)
+        .default_missing_value("-")
         .action(ArgAction::Set)
-        .default_value(".")
         .global(true)
 }
 
@@ -129,7 +134,9 @@ fn arg_ignore_paths() -> Arg {
             constants::DEFAULT_IGNORED_PATHS.as_str()
         ))
         .long_help(format!(
-            "Regex capturing all paths to be ignored, relative to -{A_S_PROJECT_DIR},--{A_L_PROJECT_DIR}. [default: '{}']",
+            "Regex capturing all paths to be ignored; \
+relative to the project root, like all paths handled by this tool. \
+[default: '{}']",
             constants::DEFAULT_IGNORED_PATHS.as_str()
         ))
         .num_args(1)
@@ -155,7 +162,7 @@ pub fn arg_matcher() -> Command {
         .arg(arg_output().index(1))
         .arg(arg_version())
         .arg(arg_quiet())
-        .arg(arg_project_dir())
+        .arg(arg_input_listing())
         .arg(arg_ignore_paths())
         .subcommand(subcom_rate())
         .subcommand(subcom_map())

@@ -56,6 +56,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cli-utils"
+version = "0.2.0"
+source = "git+https://github.com/hoijui/cli-utils-rs.git#9e54442b75659f59a9b670fb1a27badeae181276"
+dependencies = [
+ "git-version",
+]
+
+[[package]]
 name = "codify"
 version = "0.1.0"
 source = "git+https://github.com/hoijui/codify-rs.git#0aabf56b8099feb7e3e7050a9435786507bb1032"
@@ -184,6 +192,7 @@ name = "osh-dir-std"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "cli-utils",
  "codify",
  "const_format",
  "csv",
