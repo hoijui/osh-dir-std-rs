@@ -40,6 +40,7 @@ pub use evaluation::Rating;
 
 use git_version::git_version;
 
-pub type BoxResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
+pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
+pub type BoxResult<T> = Result<T, BoxError>;
 
 pub const VERSION: &str = git_version!();
