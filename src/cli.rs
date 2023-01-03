@@ -126,10 +126,12 @@ fn arg_ignore_paths() -> Arg {
     Arg::new(A_L_IGNORE_PATHS)
         .help(format!(
             "Paths to be ignored [default: '{}']",
-            constants::DEFAULT_IGNORED_PATHS.as_str()))
+            constants::DEFAULT_IGNORED_PATHS.as_str()
+        ))
         .long_help(format!(
             "Regex capturing all paths to be ignored, relative to -{A_S_PROJECT_DIR},--{A_L_PROJECT_DIR}. [default: '{}']",
-            constants::DEFAULT_IGNORED_PATHS.as_str()))
+            constants::DEFAULT_IGNORED_PATHS.as_str()
+        ))
         .num_args(1)
         .short(A_S_IGNORE_PATHS)
         .long(A_L_IGNORE_PATHS)
