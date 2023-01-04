@@ -32,9 +32,31 @@ This consists of two parts:
 
 ### CLI
 
+This lists the currently git tracked files,
+and shuffles them to this tool
+to rate the project against the known directory standards:
+
 ```shell
-ls -1 -d $(git ls-tree -rt HEAD --name-only) | osh-dir-std rate
+git ls-files --recurse-submodules | osh-dir-std rate
 ```
+
+sample output:
+
+```shell
+[
+  {
+    "name": "unixish",
+    "factor": 0.62724684
+  },
+  {
+    "name": "prusaish",
+    "factor": 0.017931035
+  }
+]
+```
+
+A factor of `1.0` would mean that the projects file- and directory structure
+adheres 100% to the respective standard.
 
 ### Library
 
