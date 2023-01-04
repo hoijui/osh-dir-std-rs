@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021-2022 Robin Vobruba <hoijui.quaero@gmail.com>
+// SPDX-FileCopyrightText: 2021-2023 Robin Vobruba <hoijui.quaero@gmail.com>
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -14,7 +14,6 @@ use crate::constants;
 pub const SC_N_RATE: &str = "rate";
 
 pub const A_P_OUTPUT: &str = "OUTPUT-FILE";
-pub const A_P_D_OUTPUT: &str = ".osh-dir-std";
 
 pub const A_L_VERSION: &str = "version";
 pub const A_S_VERSION: char = 'V';

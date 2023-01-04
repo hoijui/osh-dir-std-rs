@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Robin Vobruba <hoijui.quaero@gmail.com>
+// SPDX-FileCopyrightText: 2022-2023 Robin Vobruba <hoijui.quaero@gmail.com>
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -32,7 +32,8 @@ mod cli;
 
 use std::{
     collections::{HashMap, HashSet},
-    env, io,
+    env,
+    io::{self, Write},
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -52,16 +53,9 @@ fn ignored_paths(args: &ArgMatches) -> Regex {
     ignored_paths
 }
 
-fn out_file(args: &ArgMatches, out_type: &str) -> PathBuf {
-    let out_file = args
-        .get_one::<PathBuf>(cli::A_P_OUTPUT)
-        .cloned()
-        .unwrap_or_else(|| {
-            PathBuf::from_str(&format!("{}-{out_type}.json", cli::A_P_D_OUTPUT))
-                .expect("How on earth ...")
-        });
-    // log::debug!("Using output file '{:#?}'.", &out_file);
-    out_file
+fn out_stream(args: &ArgMatches) -> io::Result<Box<dyn Write>> {
+    let out_stream_id = args.get_one::<PathBuf>(cli::A_P_OUTPUT);
+    cli_utils::create_output_writer(out_stream_id)
 }
 
 fn print_version_and_exit(quiet: bool) {
@@ -136,10 +130,10 @@ fn main() -> BoxResult<()> {
 
         let dirs_and_files = dirs_and_files.collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
 
+        let mut out_stream = out_stream(args)?;
+
         match sub_com_name {
             cli::SC_N_RATE => {
-                let out_file = out_file(args, sub_com_name);
-
                 let rating = rate_listing(&dirs_and_files, &ignored_paths);
 
                 let json_rating = if pretty {
@@ -147,10 +141,9 @@ fn main() -> BoxResult<()> {
                 } else {
                     serde_json::to_string(&rating)
                 }?;
-                println!("{json_rating}");
+                out_stream.write_all(json_rating.as_bytes())?;
             }
             cli::SC_N_MAP => {
-                let out_file = out_file(args, sub_com_name);
                 let all = sub_com_args.get_flag(cli::A_L_ALL);
 
                 let coverage: HashMap<String, _> = if all {
