@@ -30,7 +30,12 @@
 
 mod cli;
 
-use std::{collections::HashMap, env, io, path::PathBuf, str::FromStr};
+use std::{
+    collections::{HashMap, HashSet},
+    env, io,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
@@ -104,9 +109,32 @@ fn main() -> BoxResult<()> {
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
         let mut listing_strm = cli_utils::create_input_reader(input_listing)?;
         let lines_iter = cli_utils::lines_iterator(&mut listing_strm, true);
-        let dirs_and_files = lines_iter
-            .map(line_to_path_res)
-            .collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
+        let dirs_and_files = lines_iter.map(line_to_path_res);
+
+        // In case the input-listing only contains files,
+        // we also want to iterate over their ancestor dirs,
+        // while avoiding duplicate visiting of those.
+        // As a side-effect, this also filters out duplicate input of any kind,
+        // file or directory.
+        // However, this also creates a cache in memory,
+        // that in the end will usually be as big as the whole input-listing itsself.
+        // TODO Thus we might want to add an option to skip this filtering, in case of large input listings.
+        let mut visited_dirs_cache = HashSet::new();
+        let dirs_and_files = dirs_and_files.flat_map(|path_res| {
+            path_res.map_or_else(
+                |err| vec![Err(err)],
+                |path| {
+                    path.ancestors()
+                        .filter(|ancestor| ancestor.to_string_lossy().len() > 0)
+                        .filter(|ancestor| visited_dirs_cache.insert(ancestor.to_path_buf()))
+                        .map(Path::to_path_buf)
+                        .map(Ok)
+                        .collect::<Vec<BoxResult<_>>>()
+                },
+            )
+        });
+
+        let dirs_and_files = dirs_and_files.collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
 
         match sub_com_name {
             cli::SC_N_RATE => {
