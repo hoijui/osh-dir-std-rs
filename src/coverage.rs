@@ -45,26 +45,25 @@ impl<'a> Coverage<'a> {
             out: Vec::new(),
         };
         for dir_or_file in dirs_and_files {
-            if ignored_paths.is_match(dir_or_file.as_ref().to_string_lossy().as_ref()) {
+            let dir_or_file = dir_or_file.as_ref();
+            let dir_or_file_str_lossy = dir_or_file.to_string_lossy();
+            if ignored_paths.is_match(&dir_or_file_str_lossy) {
                 continue;
             }
             rec_ratings.num_paths += 1;
             let mut matched = false;
             for record in &std.records {
-                if record
-                    .regex
-                    .is_match(dir_or_file.as_ref().to_string_lossy().as_ref())
-                {
+                if record.regex.is_match(&dir_or_file_str_lossy) {
                     rec_ratings
                         .r#in
                         .entry(record)
                         .or_insert_with(Vec::new)
-                        .push(dir_or_file.as_ref());
+                        .push(dir_or_file);
                     matched = true;
                 }
             }
             if !matched {
-                rec_ratings.out.push(dir_or_file.as_ref());
+                rec_ratings.out.push(dir_or_file);
             }
         }
         rec_ratings
