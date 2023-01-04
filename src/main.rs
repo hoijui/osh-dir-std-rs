@@ -35,14 +35,18 @@ use std::{
     env,
     io::{self, Write},
     path::{Path, PathBuf},
+    rc::Rc,
     str::FromStr,
 };
 
 use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
+use once_cell::sync::Lazy;
 use osh_dir_std::{constants, data::STDS, rate_listing, BoxResult, Coverage};
 use regex::Regex;
 use tracing::error;
+
+pub static EMPTY_PATH: Lazy<PathBuf> = Lazy::new(PathBuf::new);
 
 fn ignored_paths(args: &ArgMatches) -> Regex {
     let ignored_paths = args
@@ -82,6 +86,38 @@ fn line_to_path_res(res_line: io::Result<String>) -> BoxResult<PathBuf> {
     )
 }
 
+struct DirsAdder {
+    visited_dirs_cache: HashSet<Rc<PathBuf>>,
+}
+
+impl DirsAdder {
+    pub fn new() -> Self {
+        Self {
+            visited_dirs_cache: HashSet::new(),
+        }
+    }
+
+    pub fn call_mut<P: AsRef<Path>>(
+        &mut self,
+        path_res: BoxResult<P>,
+    ) -> Vec<BoxResult<Rc<PathBuf>>> {
+        if let Ok(path) = path_res {
+            path.as_ref()
+                .ancestors()
+                .filter(|ancestor| ancestor != &EMPTY_PATH.as_path())
+                .map(Path::to_path_buf)
+                .map(Rc::new) // We do this to not duplicate memory in cache and the iterator and the coverages
+                .filter(|ancestor| self.visited_dirs_cache.insert(Rc::clone(ancestor)))
+                .map(Ok)
+                .collect::<Vec<BoxResult<_>>>()
+        } else {
+            vec![path_res
+                .map(|path| Path::to_path_buf(path.as_ref()))
+                .map(Rc::new)]
+        }
+    }
+}
+
 fn main() -> BoxResult<()> {
     tracing_subscriber::fmt::init();
 
@@ -113,20 +149,8 @@ fn main() -> BoxResult<()> {
         // However, this also creates a cache in memory,
         // that in the end will usually be as big as the whole input-listing itsself.
         // TODO Thus we might want to add an option to skip this filtering, in case of large input listings.
-        let mut visited_dirs_cache = HashSet::new();
-        let dirs_and_files = dirs_and_files.flat_map(|path_res| {
-            path_res.map_or_else(
-                |err| vec![Err(err)],
-                |path| {
-                    path.ancestors()
-                        .filter(|ancestor| ancestor.to_string_lossy().len() > 0)
-                        .filter(|ancestor| visited_dirs_cache.insert(ancestor.to_path_buf()))
-                        .map(Path::to_path_buf)
-                        .map(Ok)
-                        .collect::<Vec<BoxResult<_>>>()
-                },
-            )
-        });
+        let mut dirs_adder = DirsAdder::new();
+        let dirs_and_files = dirs_and_files.flat_map(|path_res| dirs_adder.call_mut(path_res));
 
         let dirs_and_files = dirs_and_files.collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
 
@@ -134,7 +158,7 @@ fn main() -> BoxResult<()> {
 
         match sub_com_name {
             cli::SC_N_RATE => {
-                let rating = rate_listing(&dirs_and_files, &ignored_paths);
+                let rating = rate_listing(dirs_and_files, &ignored_paths);
 
                 let json_rating = if pretty {
                     serde_json::to_string_pretty(&rating)
@@ -147,7 +171,7 @@ fn main() -> BoxResult<()> {
                 let all = sub_com_args.get_flag(cli::A_L_ALL);
 
                 let coverage: HashMap<String, _> = if all {
-                    Coverage::all(&dirs_and_files, &ignored_paths)
+                    Coverage::all(dirs_and_files, &ignored_paths)
                         .into_iter()
                         .map(|(k, v)| (k.to_owned(), v))
                         .collect()
@@ -161,7 +185,7 @@ fn main() -> BoxResult<()> {
                         .expect("Name was checked by clap, so can not fail");
                     vec![(
                         standard_name,
-                        Coverage::new(&dirs_and_files, std, &ignored_paths),
+                        Coverage::new(dirs_and_files, std, &ignored_paths),
                     )]
                     .into_iter()
                     .collect()

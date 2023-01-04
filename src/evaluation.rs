@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use std::path::Path;
+use std::{
+    path::{Path, PathBuf},
+    rc::Rc,
+};
 
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -20,7 +23,7 @@ impl Rating {
     /// Calculates how much the input listing adheres to the input dir standard.
     /// 0.0 means not at all, 1.0 means totally/fully.
     #[must_use]
-    pub fn rate_coverage(name: &'static str, coverage: &Coverage) -> Self {
+    pub fn rate_coverage<P: AsRef<Path>>(name: &'static str, coverage: &Coverage) -> Self {
         let mut pos_rating = 0.0;
         let mut matches_records = false;
         for (record, paths) in &coverage.r#in {
@@ -60,10 +63,9 @@ impl Rating {
 /// <https://github.com/hoijui/osh-dir-std/>,
 /// calculate how likely it seems
 /// that the project is following this standard.
-pub fn rate_listing<'a, T, S>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<Rating>
+pub fn rate_listing<T>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<Rating>
 where
-    T: IntoIterator<Item = &'a S> + Copy,
-    S: AsRef<Path> + 'a,
+    T: IntoIterator<Item = Rc<PathBuf>> + Clone,
 {
     let mut ratings = vec![];
     for (key, cov) in Coverage::all(dirs_and_files, ignored_paths) {

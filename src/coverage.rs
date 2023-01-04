@@ -3,13 +3,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use regex::Regex;
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    rc::Rc,
+};
 use tracing::trace;
 
 /// Indicates which relative paths of all dirs and files in a project
 /// are covered by what parts of a specific dir standard.
 #[derive(Debug)]
-pub struct Coverage<'a> {
+pub struct Coverage {
     /// Name of the standard that coverage was checked for
     pub std: &'static super::format::DirStd,
     /// Number of viable paths in the input-dir.
@@ -19,34 +23,33 @@ pub struct Coverage<'a> {
     /// The records in the checked standard
     /// that matched one or more paths in the input,
     /// together with all those matched paths.
-    pub r#in: HashMap<&'static super::format::Rec<'static>, Vec<&'a Path>>,
+    pub r#in: HashMap<&'static super::format::Rec<'static>, Vec<Rc<PathBuf>>>,
     /// The viable paths in the input dir that did not match any record
     /// of the checked standard.
-    pub out: Vec<&'a Path>,
+    pub out: Vec<Rc<PathBuf>>,
 }
 
-impl<'a> Coverage<'a> {
+impl Coverage {
     /// Given a set of the relative paths of all dirs and files in a project,
     /// figures out which of them are covered by what parts
     /// of a given dir standard.
-    pub fn new<'b, T, S>(
+    pub fn new<T>(
         dirs_and_files: T,
         std: &'static super::format::DirStd,
         ignored_paths: &Regex,
-    ) -> Coverage<'b>
+    ) -> Self
     where
-        T: IntoIterator<Item = &'b S> + Copy,
-        S: AsRef<Path> + 'b,
+        T: IntoIterator<Item = Rc<PathBuf>> + Clone,
     {
-        let mut rec_ratings = Coverage {
+        let mut rec_ratings = Self {
             std,
             num_paths: 0,
             r#in: HashMap::new(),
             out: Vec::new(),
         };
         for dir_or_file in dirs_and_files {
-            let dir_or_file = dir_or_file.as_ref();
-            let dir_or_file_str_lossy = dir_or_file.to_string_lossy();
+            // let dir_or_file = dir_or_file.as_ref();
+            let dir_or_file_str_lossy = dir_or_file.as_ref().to_string_lossy();
             if ignored_paths.is_match(&dir_or_file_str_lossy) {
                 continue;
             }
@@ -58,7 +61,7 @@ impl<'a> Coverage<'a> {
                         .r#in
                         .entry(record)
                         .or_insert_with(Vec::new)
-                        .push(dir_or_file);
+                        .push(Rc::clone(&dir_or_file));
                     matched = true;
                 }
             }
@@ -74,19 +77,15 @@ impl<'a> Coverage<'a> {
     /// <https://github.com/hoijui/osh-dir-std/>,
     /// calculate how likely it seems
     /// that the project is following this standard.
-    pub fn all<'b, T, S>(
-        dirs_and_files: T,
-        ignored_paths: &Regex,
-    ) -> HashMap<&'static str, Coverage<'b>>
+    pub fn all<T>(dirs_and_files: T, ignored_paths: &Regex) -> HashMap<&'static str, Self>
     where
-        T: IntoIterator<Item = &'b S> + Copy,
-        S: AsRef<Path> + 'b,
+        T: IntoIterator<Item = Rc<PathBuf>> + Clone,
     {
         let mut coverages = HashMap::new();
         for (std_name, std_records) in super::data::STDS.iter() {
             trace!("");
             trace!("std: {}", std_name);
-            let std_coverage = Coverage::new(dirs_and_files, std_records, ignored_paths);
+            let std_coverage = Self::new(dirs_and_files.clone(), std_records, ignored_paths);
             coverages.insert(*std_name, std_coverage);
         }
         coverages
@@ -132,12 +131,12 @@ impl<'a> Coverage<'a> {
     /// In addition to these,
     /// we should also consider all dirs that contain an okh.toml file.
     #[must_use]
-    pub fn module_dirs(&self) -> Vec<&Path> {
+    pub fn module_dirs(&self) -> Vec<Rc<PathBuf>> {
         let mut dirs = vec![];
         for (record, paths) in &self.r#in {
             if record.module {
-                for &path in paths {
-                    dirs.push(path);
+                for path in paths {
+                    dirs.push(Rc::clone(path));
                 }
             }
         }
@@ -152,7 +151,7 @@ impl<'a> Coverage<'a> {
 /// that the project is following this standard.
 pub fn rate_listing<'a, T, S>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<(&'static str, f32)>
 where
-    T: IntoIterator<Item = &'a S> + Copy,
+    T: IntoIterator<Item = Rc<PathBuf>> + Copy,
     S: AsRef<Path> + 'a,
 {
     let mut ratings = vec![];
