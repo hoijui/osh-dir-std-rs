@@ -88,3 +88,10 @@ fn unixish_res_fixed() -> BoxResult<()> {
     Ok(())
 }
 ```
+
+## Related Projects
+
+* [`osh`-tool](https://github.com/hoijui/osh-tool) -
+  Checks an OSH project against a set of predefined checks,
+  to try to assess its overall machine-readability and openness. \
+  (also uses this tool internally)
