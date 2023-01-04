@@ -72,7 +72,14 @@ fn print_version_and_exit(quiet: bool) {
 fn line_to_path_res(res_line: io::Result<String>) -> BoxResult<PathBuf> {
     res_line.map_or_else(
         |err| Err(err.into()),
-        |line| PathBuf::from_str(&line).map_err(std::convert::Into::into),
+        |mut line| {
+            // Removes "./" or ".\" (<- Windows) from the beginning of paths
+            if line.starts_with("./") || line.starts_with(".\\") {
+                line.pop();
+                line.pop();
+            }
+            PathBuf::from_str(&line).map_err(std::convert::Into::into)
+        },
     )
 }
 
