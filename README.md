@@ -25,8 +25,13 @@ https://github.com/hoijui/osh-dir-std).
 This consists of two parts:
 
 1. a (Rust) library to parse the specification(s) into easily usable structures
-2. (**TODO**:) a CLI tool (`osh-dir`) that helps checking a given project-root directory
+2. a CLI tool (`osh-dir-std`) that helps checking a given projects file listing
     against one or multiple specifications.
+
+**NOTE** \
+This only checks the paths of files and directories
+against a set of presets (aka "standards").
+It does *not* check the content of any files in any way.
 
 ## Example Usage
 
