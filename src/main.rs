@@ -42,7 +42,10 @@ use std::{
 use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
 use once_cell::sync::Lazy;
-use osh_dir_std::{constants, data::STDS, rate_listing, BoxResult, Coverage};
+use osh_dir_std::{
+    constants, cover_listing, cover_listing_with, data::STDS, rate_listing, rate_listing_with,
+    BoxResult,
+};
 use regex::Regex;
 use tracing::error;
 
@@ -171,7 +174,7 @@ fn main() -> BoxResult<()> {
                 let all = sub_com_args.get_flag(cli::A_L_ALL);
 
                 let coverage: HashMap<String, _> = if all {
-                    Coverage::all(dirs_and_files, &ignored_paths)
+                    cover_listing(dirs_and_files, &ignored_paths)
                         .into_iter()
                         .map(|(k, v)| (k.to_owned(), v))
                         .collect()
@@ -185,7 +188,7 @@ fn main() -> BoxResult<()> {
                         .expect("Name was checked by clap, so can not fail");
                     vec![(
                         standard_name,
-                        Coverage::new(dirs_and_files, std, &ignored_paths),
+                        cover_listing_with(dirs_and_files, &ignored_paths, std),
                     )]
                     .into_iter()
                     .collect()

@@ -65,7 +65,7 @@ use crate::format;
     )?;
     writeln!(
         &mut dir_stds_out,
-        r##"pub static STDS: Lazy<HashMap<&'static str, format::DirStd>> = Lazy::new(|| {});
+        r##"pub static STDS: Lazy<HashMap<String, format::DirStd>> = Lazy::new(|| {});
 "##,
         stds.init_code()
     )?;

@@ -34,8 +34,11 @@ pub mod data;
 mod evaluation;
 pub mod format;
 
+pub use coverage::cover_listing;
+pub use coverage::cover_listing_with;
 pub use coverage::Coverage;
 pub use evaluation::rate_listing;
+pub use evaluation::rate_listing_with;
 pub use evaluation::Rating;
 
 use git_version::git_version;

@@ -3,12 +3,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use regex::Regex;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    rc::Rc,
-};
+use std::{collections::HashMap, path::PathBuf, rc::Rc};
 use tracing::trace;
+
+use super::format::DirStd;
+
+/// Indicates which relative paths of all dirs and files in a project
+/// are covered by what parts of a specific dir standard.
+#[derive(Debug)]
+pub struct Checker {
+    /// the coverage in creation
+    pub coverage: Coverage,
+    ignored_paths: Regex,
+}
 
 /// Indicates which relative paths of all dirs and files in a project
 /// are covered by what parts of a specific dir standard.
@@ -29,68 +36,56 @@ pub struct Coverage {
     pub out: Vec<Rc<PathBuf>>,
 }
 
-impl Coverage {
+impl Checker {
     /// Given a set of the relative paths of all dirs and files in a project,
     /// figures out which of them are covered by what parts
     /// of a given dir standard.
-    pub fn new<T>(
-        dirs_and_files: T,
-        std: &'static super::format::DirStd,
-        ignored_paths: &Regex,
-    ) -> Self
-    where
-        T: IntoIterator<Item = Rc<PathBuf>> + Clone,
-    {
-        let mut rec_ratings = Self {
-            std,
-            num_paths: 0,
-            r#in: HashMap::new(),
-            out: Vec::new(),
-        };
-        for dir_or_file in dirs_and_files {
-            // let dir_or_file = dir_or_file.as_ref();
-            let dir_or_file_str_lossy = dir_or_file.as_ref().to_string_lossy();
-            if ignored_paths.is_match(&dir_or_file_str_lossy) {
-                continue;
-            }
-            rec_ratings.num_paths += 1;
-            let mut matched = false;
-            for record in &std.records {
-                if record.regex.is_match(&dir_or_file_str_lossy) {
-                    rec_ratings
-                        .r#in
-                        .entry(record)
-                        .or_insert_with(Vec::new)
-                        .push(Rc::clone(&dir_or_file));
-                    matched = true;
-                }
-            }
-            if !matched {
-                rec_ratings.out.push(dir_or_file);
-            }
+    pub fn new(std: &'static super::format::DirStd, ignored_paths: &Regex) -> Self {
+        Self {
+            coverage: Coverage {
+                std,
+                num_paths: 0,
+                r#in: HashMap::new(),
+                out: Vec::new(),
+            },
+            ignored_paths: ignored_paths.clone(),
         }
-        rec_ratings
     }
 
-    /// Given a set of the relative paths of all dirs and files in a project,
-    /// for each of the known dir standards from
-    /// <https://github.com/hoijui/osh-dir-std/>,
-    /// calculate how likely it seems
-    /// that the project is following this standard.
-    pub fn all<T>(dirs_and_files: T, ignored_paths: &Regex) -> HashMap<&'static str, Self>
-    where
-        T: IntoIterator<Item = Rc<PathBuf>> + Clone,
-    {
-        let mut coverages = HashMap::new();
+    /// Creates a map of checkers with one entry for each standard.
+    pub fn new_all(ignored_paths: &Regex) -> HashMap<&'static str, Self> {
+        let mut checkers = HashMap::new();
         for (std_name, std_records) in super::data::STDS.iter() {
-            trace!("");
-            trace!("std: {}", std_name);
-            let std_coverage = Self::new(dirs_and_files.clone(), std_records, ignored_paths);
-            coverages.insert(*std_name, std_coverage);
+            let std_checker = Self::new(std_records, ignored_paths);
+            checkers.insert(std_name as &str, std_checker);
         }
-        coverages
+        checkers
     }
 
+    pub fn cover(&mut self, dir_or_file: &Rc<PathBuf>) {
+        let dir_or_file_str_lossy = dir_or_file.as_ref().to_string_lossy();
+        if self.ignored_paths.is_match(&dir_or_file_str_lossy) {
+            return;
+        }
+        self.coverage.num_paths += 1;
+        let mut matched = false;
+        for record in &self.coverage.std.records {
+            if record.regex.is_match(&dir_or_file_str_lossy) {
+                self.coverage
+                    .r#in
+                    .entry(record)
+                    .or_insert_with(Vec::new)
+                    .push(Rc::clone(dir_or_file));
+                matched = true;
+            }
+        }
+        if !matched {
+            self.coverage.out.push(Rc::clone(dir_or_file));
+        }
+    }
+}
+
+impl Coverage {
     /// Calculates how much the input listing adheres to the input dir standard.
     /// 0.0 means not at all, 1.0 means totally/fully.
     #[must_use]
@@ -147,24 +142,38 @@ impl Coverage {
 /// Given a set of the relative paths of all dirs and files in a project,
 /// for each of the known dir standards from
 /// <https://github.com/hoijui/osh-dir-std/>,
-/// calculate how likely it seems
-/// that the project is following this standard.
-pub fn rate_listing<'a, T, S>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<(&'static str, f32)>
+/// calculate what record of the standard each dir or file might be covered under.
+pub fn cover_listing<T>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<(&'static str, Coverage)>
 where
-    T: IntoIterator<Item = Rc<PathBuf>> + Copy,
-    S: AsRef<Path> + 'a,
+    T: IntoIterator<Item = Rc<PathBuf>> + Clone,
 {
-    let mut ratings = vec![];
-    for (key, cov) in Coverage::all(dirs_and_files, ignored_paths) {
-        ratings.push((key, cov.rate()));
+    let mut checkers = Checker::new_all(ignored_paths);
+    for dir_or_file in dirs_and_files {
+        for checker in checkers.values_mut() {
+            checker.cover(&dir_or_file);
+        }
     }
-    // let mut ratings = HashMap::new();
-    // for (std_name, std_records) in super::data::STDS.iter() {
-    //     trace!("");
-    //     trace!("std: {}", std_name);
-    //     let std_coverage = Coverage::check(dirs_and_files, std_records, ignored_paths);
-    //     let rating = std_coverage.rate();
-    //     ratings.insert(*std_name, rating);
-    // }
-    ratings
+    let mut coverages = vec![];
+    for (std, checker) in checkers {
+        coverages.push((std, checker.coverage));
+    }
+    coverages
+}
+
+/// Given a set of the relative paths of all dirs and files in a project,
+/// for the given directory standard,
+/// calculate what record of the standard each dir or file might be covered under.
+pub fn cover_listing_with<T>(
+    dirs_and_files: T,
+    ignored_paths: &Regex,
+    std: &'static DirStd,
+) -> Coverage
+where
+    T: IntoIterator<Item = Rc<PathBuf>> + Clone,
+{
+    let mut checker = Checker::new(std, ignored_paths);
+    for dir_or_file in dirs_and_files {
+        checker.cover(&dir_or_file);
+    }
+    checker.coverage
 }
