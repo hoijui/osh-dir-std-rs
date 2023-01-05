@@ -37,12 +37,48 @@ It does *not* check the content of any files in any way.
 
 ### CLI
 
-This lists the currently git tracked files,
-and shuffles them to this tool
+The tool expects a new-line separated listing of files
+(and optionally directories) of the project,
+either on [`stdin`](
+https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)),
+or in a file whichs name is given as the first argument.
+This list might come from git
+(or any other [version control system (VCS)](
+https://en.wikipedia.org/wiki/Version_control) used),
+the file-system directly,
+a ZIP file or even a web-site that lists the files.
+
+A few examples of how to list files in different scenarios,
 to rate the project against the known directory standards:
+
+[git](https://git-scm.com/):
 
 ```shell
 git ls-files --recurse-submodules | osh-dir-std rate
+```
+
+[SVN](https://subversion.apache.org/):
+
+```shell
+svn ls | osh-dir-std rate
+```
+
+[Mercurial (`hg`)](https://www.mercurial-scm.org/):
+
+```shell
+hg status --all | osh-dir-std rate
+```
+
+[pijul](https://pijul.org/):
+
+```shell
+pijul list | osh-dir-std rate
+```
+
+file-system:
+
+```shell
+ls -r1 | osh-dir-std rate
 ```
 
 sample output:
