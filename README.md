@@ -102,7 +102,7 @@ adheres 100% to the respective standard.
 ### Library
 
 ``` rust
-use osh_dir_std::{self, format::Rec};
+use osh_dir_std::{self, BoxResult, format::Rec};
 
 fn find_rec(std: &str, record_path: &str) -> BoxResult<&'static Rec<'static>> {
     for rec in &osh_dir_std::data::STDS.get(std).unwrap().records {
