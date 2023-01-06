@@ -63,6 +63,10 @@ fn ignored_paths(args: &ArgMatches) -> Regex {
 
 fn out_stream(args: &ArgMatches) -> io::Result<Box<dyn Write>> {
     let out_stream_id = args.get_one::<PathBuf>(cli::A_P_OUTPUT);
+    log::info!(
+        "Writing output to {}",
+        cli_utils::create_output_writer_description(&out_stream_id)
+    );
     cli_utils::create_output_writer(&out_stream_id)
 }
 
@@ -142,6 +146,10 @@ fn main() -> BoxResult<()> {
     let pretty = true; // TODO Make this a CLI arg
 
     if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
+        log::info!(
+            "Reading input listing from {}.",
+            cli_utils::create_input_reader_description(&input_listing)
+        );
         let mut listing_strm = cli_utils::create_input_reader(&input_listing)?;
         let lines_iter = cli_utils::lines_iterator(&mut listing_strm, true);
         let dirs_and_files = lines_iter.map(line_to_path_res);
