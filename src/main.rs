@@ -170,7 +170,7 @@ fn main() -> BoxResult<()> {
         );
         let mut listing_strm = cli_utils::create_input_reader(&input_listing)?;
         let lines_iter = cli_utils::lines_iterator(&mut listing_strm, true);
-        let dirs_and_files = lines_iter.map(line_to_path_res);
+        let files = lines_iter.map(line_to_path_res);
 
         // In case the input-listing only contains files,
         // we also want to iterate over their ancestor dirs,
@@ -181,9 +181,9 @@ fn main() -> BoxResult<()> {
         // that in the end will usually be as big as the whole input-listing itsself.
         // TODO Thus we might want to add an option to skip this filtering, in case of large input listings.
         let mut dirs_adder = DirsAdder::new();
-        let dirs_and_files = dirs_and_files.flat_map(|path_res| dirs_adder.call_mut(path_res));
+        let dirs_and_files_iter = files.flat_map(|path_res| dirs_adder.call_mut(path_res));
 
-        let dirs_and_files = dirs_and_files.collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
+        let dirs_and_files = dirs_and_files_iter.collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
 
         let stds = standard(args);
 
