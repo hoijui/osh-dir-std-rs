@@ -6,7 +6,6 @@ use clap::{command, value_parser, Arg, ArgAction, ArgGroup, Command, ValueHint};
 use const_format::formatcp;
 use osh_dir_std::{constants::PROJECT_ISSUES_URL, data::STD_NAMES};
 use regex::Regex;
-// use const_format::formatcp;
 use std::env;
 
 use crate::constants;
@@ -48,6 +47,7 @@ fn arg_output() -> Arg {
 }
 
 fn arg_version() -> Arg {
+    #[allow(clippy::indexing_slicing)]
     Arg::new(A_L_VERSION)
         .help("Print version information and exit")
         .long_help(formatcp!(
