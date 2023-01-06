@@ -86,16 +86,16 @@ where
 /// # Panics
 ///
 /// If `std_name` does not equal any known directory standards name.
-pub fn rate_listing_with<T>(dirs_and_files: T, ignored_paths: &Regex, std_name: String) -> Rating
+pub fn rate_listing_with<T>(dirs_and_files: T, ignored_paths: &Regex, std_name: &str) -> Rating
 where
     T: IntoIterator<Item = Rc<PathBuf>> + Clone,
 {
     let std = STDS
-        .get(&std_name)
+        .get(std_name)
         .unwrap_or_else(|| panic!("Unknown directory standard: '{std_name}'"));
     let coverage = cover_listing_with(dirs_and_files, ignored_paths, std);
     Rating {
-        name: std_name,
+        name: std_name.to_string(),
         factor: coverage.rate(),
     }
 }

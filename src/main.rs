@@ -45,7 +45,7 @@ use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
 use once_cell::sync::Lazy;
 use osh_dir_std::{
     constants, cover_listing, cover_listing_with, data::STDS, rate_listing, rate_listing_with,
-    BoxResult,
+    BoxResult, DEFAULT_STD_NAME,
 };
 use regex::Regex;
 use tracing::error;
@@ -59,6 +59,26 @@ fn ignored_paths(args: &ArgMatches) -> Regex {
         .unwrap_or_else(|| constants::DEFAULT_IGNORED_PATHS.to_owned());
     // log::debug!("Using ignore paths regex: '{:#?}'", &ignored_paths);
     ignored_paths
+}
+
+/// Returns either the name of the specific OSH directory standard to use,
+/// or `None`, meaning: use all standards.
+fn standard(args: &ArgMatches) -> Option<&str> {
+    let (std, stds_indicator) = if args.get_flag(cli::A_L_ALL) {
+        (None, String::from("<ALL>"))
+    } else {
+        args.get_one::<String>(cli::A_L_STANDARD).map_or_else(
+            || {
+                (
+                    Some(DEFAULT_STD_NAME),
+                    format!("default({DEFAULT_STD_NAME})"),
+                )
+            },
+            |std| (Some(std), std.to_string()),
+        )
+    };
+    log::info!("Using standard(s): {stds_indicator}");
+    std
 }
 
 fn out_stream(args: &ArgMatches) -> io::Result<Box<dyn Write>> {
@@ -143,7 +163,7 @@ fn main() -> BoxResult<()> {
     let ignored_paths = ignored_paths(args);
     let pretty = true; // TODO Make this a CLI arg
 
-    if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
+    if let Some((sub_com_name, _sub_com_args)) = args.subcommand() {
         log::info!(
             "Reading input listing from {}.",
             cli_utils::create_input_reader_description(&input_listing)
@@ -165,11 +185,17 @@ fn main() -> BoxResult<()> {
 
         let dirs_and_files = dirs_and_files.collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
 
+        let stds = standard(args);
+
         let mut out_stream = out_stream(args)?;
 
         match sub_com_name {
             cli::SC_N_RATE => {
-                let rating = rate_listing(dirs_and_files, &ignored_paths);
+                log::info!("Rating listing according to standard(s) ...");
+                let rating = match stds {
+                    None => rate_listing(dirs_and_files, &ignored_paths),
+                    Some(std) => vec![rate_listing_with(dirs_and_files, &ignored_paths, std)],
+                };
 
                 let json_rating = if pretty {
                     serde_json::to_string_pretty(&rating)
@@ -179,28 +205,21 @@ fn main() -> BoxResult<()> {
                 out_stream.write_all(json_rating.as_bytes())?;
             }
             cli::SC_N_MAP => {
-                let all = sub_com_args.get_flag(cli::A_L_ALL);
-
-                let coverage: HashMap<String, _> = if all {
-                    cover_listing(dirs_and_files, &ignored_paths)
-                        .into_iter()
-                        .map(|(k, v)| (k.to_owned(), v))
-                        .collect()
-                } else {
-                    let standard_name = sub_com_args
-                        .get_one::<String>(cli::A_L_STANDARD)
-                        .cloned()
-                        .expect("required argument");
-                    let std = STDS
-                        .get(&standard_name as &str)
-                        .expect("Name was checked by clap, so can not fail");
-                    vec![(
-                        standard_name,
-                        cover_listing_with(dirs_and_files, &ignored_paths, std),
-                    )]
-                    .into_iter()
-                    .collect()
-                };
+                log::info!("Mapping listing to standard(s) ...");
+                let coverage: HashMap<String, _> = match stds {
+                    None => cover_listing(dirs_and_files, &ignored_paths),
+                    Some(std) => vec![(
+                        std,
+                        cover_listing_with(
+                            dirs_and_files,
+                            &ignored_paths,
+                            STDS.get(std).expect("Clap already checked the name!"),
+                        ),
+                    )],
+                }
+                .into_iter()
+                .map(|(k, v)| (k.to_owned(), v))
+                .collect();
 
                 // TODO Output the coverage/mapping in JSON
                 todo!();
@@ -218,5 +237,6 @@ fn main() -> BoxResult<()> {
         std::process::exit(1);
     }
 
+    log::info!("done.");
     Ok(())
 }

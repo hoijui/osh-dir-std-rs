@@ -44,6 +44,8 @@ pub use evaluation::Rating;
 
 use git_version::git_version;
 
+pub use data::DEFAULT_STD_NAME;
+
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 pub type BoxResult<T> = Result<T, BoxError>;
 
