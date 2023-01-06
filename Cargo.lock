@@ -57,8 +57,8 @@ dependencies = [
 
 [[package]]
 name = "cli-utils"
-version = "0.3.1"
-source = "git+https://github.com/hoijui/cli-utils-rs.git#1660fed7f8ba011b66f74761cbd981c7cbcc8cb5"
+version = "0.4.0"
+source = "git+https://github.com/hoijui/cli-utils-rs.git#77a470ea586506738f6a7ac0953b9eb9d5a29af0"
 dependencies = [
  "git-version",
  "once_cell",
@@ -198,6 +198,7 @@ dependencies = [
  "const_format",
  "csv",
  "git-version",
+ "log",
  "once_cell",
  "regex",
  "serde",
