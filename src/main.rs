@@ -105,6 +105,7 @@ impl DirsAdder {
         &mut self,
         path_res: BoxResult<P>,
     ) -> Vec<BoxResult<Rc<PathBuf>>> {
+        #[allow(clippy::option_if_let_else)]
         if let Ok(path) = path_res {
             path.as_ref()
                 .ancestors()
