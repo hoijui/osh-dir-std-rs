@@ -79,6 +79,12 @@ or '-' or no argument, meaning the same format is expected on stdin.",
         )
         .short(A_S_INPUT_LISTING)
         .long(A_L_INPUT_LISTING)
+        .alias("input-listing")
+        .alias("input-lst")
+        .alias("in-lst")
+        .alias("input")
+        .alias("in")
+        .alias("lst")
         .num_args(1)
         .value_parser(value_parser!(std::path::PathBuf))
         .value_name("FILE")
@@ -90,11 +96,13 @@ or '-' or no argument, meaning the same format is expected on stdin.",
 fn subcom_rate() -> Command {
     Command::new(SC_N_RATE)
         .about("Rates a project repo directory with all known OSH dir standards, indicating for each standard how well it fits")
+        .alias("r")
 }
 
 fn subcom_map() -> Command {
     Command::new(SC_N_MAP)
         .about("Maps project directories and files to parts of the standard")
+        .alias("m")
         .arg(arg_standard())
         .arg(arg_all())
         .group(
@@ -110,6 +118,7 @@ fn arg_standard() -> Arg {
         .num_args(1)
         .short(A_S_STANDARD)
         .long(A_L_STANDARD)
+        .alias("std")
         .value_parser(STD_NAMES)
         .value_name("STD")
         .conflicts_with(A_L_ALL)
@@ -121,6 +130,8 @@ fn arg_all() -> Arg {
         .help("Check coverage versus all OSH directory standards")
         .short(A_S_ALL)
         .long(A_L_ALL)
+        .alias("all-standards")
+        .alias("all-stds")
         .conflicts_with(A_L_STANDARD)
         .action(ArgAction::SetTrue)
 }
@@ -140,6 +151,10 @@ relative to the project root, like all paths handled by this tool. \
         .num_args(1)
         .short(A_S_IGNORE_PATHS)
         .long(A_L_IGNORE_PATHS)
+        .alias("ign")
+        .alias("ignps")
+        .alias("ip")
+        .alias("ips")
         .value_parser(value_parser!(Regex))
         .value_name("REGEX")
         .action(ArgAction::Set)
