@@ -181,9 +181,7 @@ fn main() -> BoxResult<()> {
         // that in the end will usually be as big as the whole input-listing itsself.
         // TODO Thus we might want to add an option to skip this filtering, in case of large input listings.
         let mut dirs_adder = DirsAdder::new();
-        let dirs_and_files_iter = files.flat_map(|path_res| dirs_adder.call_mut(path_res));
-
-        let dirs_and_files = dirs_and_files_iter.collect::<BoxResult<Vec<_>>>()?; // TODO Instead of collecting here, lets get rid of Vecs completely and do everything with Iterators
+        let dirs_and_files = files.flat_map(|path_res| dirs_adder.call_mut(path_res));
 
         let stds = standard(args);
 
@@ -193,8 +191,8 @@ fn main() -> BoxResult<()> {
             cli::SC_N_RATE => {
                 log::info!("Rating listing according to standard(s) ...");
                 let rating = match stds {
-                    None => rate_listing(dirs_and_files, &ignored_paths),
-                    Some(std) => vec![rate_listing_with(dirs_and_files, &ignored_paths, std)],
+                    None => rate_listing(dirs_and_files, &ignored_paths)?,
+                    Some(std) => vec![rate_listing_with(dirs_and_files, &ignored_paths, std)?],
                 };
 
                 let json_rating = if pretty {
@@ -207,14 +205,14 @@ fn main() -> BoxResult<()> {
             cli::SC_N_MAP => {
                 log::info!("Mapping listing to standard(s) ...");
                 let coverage: HashMap<String, _> = match stds {
-                    None => cover_listing(dirs_and_files, &ignored_paths),
+                    None => cover_listing(dirs_and_files, &ignored_paths)?,
                     Some(std) => vec![(
                         std,
                         cover_listing_with(
                             dirs_and_files,
                             &ignored_paths,
                             STDS.get(std).expect("Clap already checked the name!"),
-                        ),
+                        )?,
                     )],
                 }
                 .into_iter()

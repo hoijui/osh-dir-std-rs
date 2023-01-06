@@ -63,11 +63,16 @@ impl Rating {
 /// <https://github.com/hoijui/osh-dir-std/>,
 /// calculate how likely it seems
 /// that the project is following this standard.
-pub fn rate_listing<T>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<Rating>
+///
+/// # Errors
+///
+/// If any of the input listing entires is an error,
+/// usually caused by an I/O issue.
+pub fn rate_listing<T, E>(dirs_and_files: T, ignored_paths: &Regex) -> Result<Vec<Rating>, E>
 where
-    T: IntoIterator<Item = Rc<PathBuf>> + Clone,
+    T: Iterator<Item = Result<Rc<PathBuf>, E>>,
 {
-    let coverages = cover_listing(dirs_and_files, ignored_paths);
+    let coverages = cover_listing(dirs_and_files, ignored_paths)?;
     let mut ratings = vec![];
     for (std, coverage) in coverages {
         ratings.push(Rating {
@@ -75,7 +80,7 @@ where
             factor: coverage.rate(),
         });
     }
-    ratings
+    Ok(ratings)
 }
 
 /// Given a set of the relative paths of all dirs and files in a project,
@@ -83,19 +88,28 @@ where
 /// calculate how likely it seems
 /// that the project is following this standard.
 ///
+/// # Errors
+///
+/// If any of the input listing entires is an error,
+/// usually caused by an I/O issue.
+///
 /// # Panics
 ///
 /// If `std_name` does not equal any known directory standards name.
-pub fn rate_listing_with<T>(dirs_and_files: T, ignored_paths: &Regex, std_name: &str) -> Rating
+pub fn rate_listing_with<T, E>(
+    dirs_and_files: T,
+    ignored_paths: &Regex,
+    std_name: &str,
+) -> Result<Rating, E>
 where
-    T: IntoIterator<Item = Rc<PathBuf>> + Clone,
+    T: Iterator<Item = Result<Rc<PathBuf>, E>>,
 {
     let std = STDS
         .get(std_name)
         .unwrap_or_else(|| panic!("Unknown directory standard: '{std_name}'"));
-    let coverage = cover_listing_with(dirs_and_files, ignored_paths, std);
-    Rating {
+    let coverage = cover_listing_with(dirs_and_files, ignored_paths, std)?;
+    Ok(Rating {
         name: std_name.to_string(),
         factor: coverage.rate(),
-    }
+    })
 }

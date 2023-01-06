@@ -143,12 +143,21 @@ impl Coverage {
 /// for each of the known dir standards from
 /// <https://github.com/hoijui/osh-dir-std/>,
 /// calculate what record of the standard each dir or file might be covered under.
-pub fn cover_listing<T>(dirs_and_files: T, ignored_paths: &Regex) -> Vec<(&'static str, Coverage)>
+///
+/// # Errors
+///
+/// If any of the input listing entires is an error,
+/// usually caused by an I/O issue.
+pub fn cover_listing<T, E>(
+    dirs_and_files: T,
+    ignored_paths: &Regex,
+) -> Result<Vec<(&'static str, Coverage)>, E>
 where
-    T: IntoIterator<Item = Rc<PathBuf>> + Clone,
+    T: Iterator<Item = Result<Rc<PathBuf>, E>>,
 {
     let mut checkers = Checker::new_all(ignored_paths);
-    for dir_or_file in dirs_and_files {
+    for dir_or_file_res in dirs_and_files {
+        let dir_or_file = dir_or_file_res?;
         for checker in checkers.values_mut() {
             checker.cover(&dir_or_file);
         }
@@ -157,23 +166,29 @@ where
     for (std, checker) in checkers {
         coverages.push((std, checker.coverage));
     }
-    coverages
+    Ok(coverages)
 }
 
 /// Given a set of the relative paths of all dirs and files in a project,
 /// for the given directory standard,
 /// calculate what record of the standard each dir or file might be covered under.
-pub fn cover_listing_with<T>(
+///
+/// # Errors
+///
+/// If any of the input listing entires is an error,
+/// usually caused by an I/O issue.
+pub fn cover_listing_with<T, E>(
     dirs_and_files: T,
     ignored_paths: &Regex,
     std: &'static DirStd,
-) -> Coverage
+) -> Result<Coverage, E>
 where
-    T: IntoIterator<Item = Rc<PathBuf>> + Clone,
+    T: Iterator<Item = Result<Rc<PathBuf>, E>>,
 {
     let mut checker = Checker::new(std, ignored_paths);
-    for dir_or_file in dirs_and_files {
+    for dir_or_file_res in dirs_and_files {
+        let dir_or_file = dir_or_file_res?;
         checker.cover(&dir_or_file);
     }
-    checker.coverage
+    Ok(checker.coverage)
 }
