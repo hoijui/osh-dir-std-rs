@@ -89,15 +89,12 @@ sample output:
     "name": "unixish",
     "factor": 0.62724684
   },
-  {
-    "name": "prusaish",
-    "factor": 0.017931035
-  }
 ]
 ```
 
 A factor of `1.0` would mean that the projects file- and directory structure
 adheres 100% to the respective standard.
+`unixish` is the name of the default directory standard.
 
 ### Library
 
