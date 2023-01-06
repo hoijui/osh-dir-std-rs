@@ -27,6 +27,7 @@
 #![allow(clippy::trivial_regex)]
 #![allow(clippy::struct_excessive_bools)]
 #![allow(clippy::fn_params_excessive_bools)]
+#![allow(clippy::cast_precision_loss)]
 
 mod cli;
 
