@@ -103,13 +103,6 @@ fn subcom_map() -> Command {
     Command::new(SC_N_MAP)
         .about("Maps project directories and files to parts of the standard")
         .alias("m")
-        .arg(arg_standard())
-        .arg(arg_all())
-        .group(
-            ArgGroup::new("standard")
-                .args([A_L_STANDARD, A_L_ALL])
-                .required(true),
-        )
 }
 
 fn arg_standard() -> Arg {
@@ -123,6 +116,7 @@ fn arg_standard() -> Arg {
         .value_name("STD")
         .conflicts_with(A_L_ALL)
         .action(ArgAction::Set)
+        .global(true)
 }
 
 fn arg_all() -> Arg {
@@ -134,6 +128,7 @@ fn arg_all() -> Arg {
         .alias("all-stds")
         .conflicts_with(A_L_STANDARD)
         .action(ArgAction::SetTrue)
+        .global(true)
 }
 
 fn arg_ignore_paths() -> Arg {
@@ -193,6 +188,13 @@ pub fn arg_matcher() -> Command {
         .arg(arg_quiet())
         .arg(arg_input_listing())
         .arg(arg_ignore_paths())
+        .arg(arg_standard())
+        .arg(arg_all())
+        .group(
+            ArgGroup::new("grp_standard")
+                .args([A_L_STANDARD, A_L_ALL])
+                .required(true),
+        )
         .subcommand(subcom_rate())
         .subcommand(subcom_map())
 }
