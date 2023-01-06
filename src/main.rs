@@ -139,9 +139,7 @@ fn main() -> BoxResult<()> {
         print_version_and_exit(quiet);
     }
 
-    let input_listing = args
-        .get_one::<String>(A_L_INPUT_LISTING)
-        .map(|path_str| path_str as &str);
+    let input_listing = args.get_one::<PathBuf>(A_L_INPUT_LISTING);
     let ignored_paths = ignored_paths(args);
     let pretty = true; // TODO Make this a CLI arg
 

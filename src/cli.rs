@@ -83,7 +83,6 @@ or '-' or no argument, meaning the same format is expected on stdin.",
         .value_parser(value_parser!(std::path::PathBuf))
         .value_name("FILE")
         .value_hint(ValueHint::DirPath)
-        .default_missing_value("-")
         .action(ArgAction::Set)
         .global(true)
 }
