@@ -29,6 +29,7 @@ pub enum OptBool {
 
 impl OptBool {
     #[must_use]
+    #[allow(dead_code)]
     pub const fn to_native(self) -> Option<bool> {
         match self {
             Self::False => Some(false),
