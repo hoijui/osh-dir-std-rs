@@ -19,7 +19,14 @@ use codify::Codify;
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 pub type BoxResult<T> = Result<T, BoxError>;
 
+const DIR_STD_ROOT: &str = "resources/osh-dir-std";
 const DIR_STD_DIRS_ROOT: &str = "resources/osh-dir-std/mod/";
+
+fn read_default_dir_std_name() -> BoxResult<String> {
+    let default_name_file = format!("{DIR_STD_ROOT}/default_mod.csv");
+    println!("cargo:rerun-if-changed={default_name_file}");
+    fs::read_to_string(default_name_file).map_err(Into::into)
+}
 
 fn read_dir_stds() -> BoxResult<HashMap<String, format::DirStandard>> {
     let mut dir_stds = HashMap::new();
@@ -55,7 +62,15 @@ use crate::format;
     
     "##,
     )?;
+
+    let default_std_name = read_default_dir_std_name()?;
     let stds = read_dir_stds()?;
+    writeln!(
+        &mut dir_stds_out,
+        r##"pub const DEFAULT_STD_NAME: &str = "{default_std_name}";
+"##
+    )?;
+
     let mut std_names_sorted: Vec<&String> = stds.keys().collect();
     std_names_sorted.sort();
     writeln!(
