@@ -5,7 +5,6 @@
 use std::{
     collections::HashMap,
     env,
-    error::Error,
     fs::{self, File},
     io::Write,
     path::Path,
@@ -17,9 +16,12 @@ mod format;
 
 use codify::Codify;
 
+pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
+pub type BoxResult<T> = Result<T, BoxError>;
+
 const DIR_STD_DIRS_ROOT: &str = "resources/osh-dir-std/mod/";
 
-fn read_dir_stds() -> Result<HashMap<String, format::DirStandard>, Box<dyn Error>> {
+fn read_dir_stds() -> BoxResult<HashMap<String, format::DirStandard>> {
     let mut dir_stds = HashMap::new();
     for f in fs::read_dir(DIR_STD_DIRS_ROOT)? {
         let f = f?;
@@ -37,7 +39,7 @@ fn read_dir_stds() -> Result<HashMap<String, format::DirStandard>, Box<dyn Error
     Ok(dir_stds)
 }
 
-fn transcribe_dir_stds() -> Result<(), Box<dyn Error>> {
+fn transcribe_dir_stds() -> BoxResult<()> {
     let out_dir = env::var("OUT_DIR")?;
     let dest_path = Path::new(&out_dir).join("data_gen.rs");
 
