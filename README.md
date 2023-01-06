@@ -41,7 +41,7 @@ The tool expects a new-line separated listing of files
 (and optionally directories) of the project,
 either on [`stdin`](
 https://en.wikipedia.org/wiki/Standard_streams#Standard_input_(stdin)),
-or in a file whichs name is given as the first argument.
+or in a file given as the first argument.
 This list might come from git
 (or any other [version control system (VCS)](
 https://en.wikipedia.org/wiki/Version_control) used),
