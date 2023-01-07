@@ -161,7 +161,9 @@ impl DirsAdder {
 }
 
 fn main() -> BoxResult<()> {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
+        .try_init()?;
 
     let arg_matcher = cli::arg_matcher();
     let args = &arg_matcher.get_matches();
