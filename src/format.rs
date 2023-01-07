@@ -81,9 +81,6 @@ pub struct Rec<'a> {
     pub path: &'a str,
     pub fixed: bool,
     pub source: bool,
-    // #[serde(default)]
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // module: Option<bool>,
     pub module: bool,
     pub arbitrary_content: Option<bool>,
     pub indicativeness: f32,
@@ -114,9 +111,6 @@ pub struct Record {
     pub path: String,
     pub fixed: bool,
     pub source: bool,
-    // #[serde(default)]
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // module: Option<bool>,
     pub module: bool,
     pub arbitrary_content: OptBool,
     pub indicativeness: f32,
