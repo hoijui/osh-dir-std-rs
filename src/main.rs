@@ -44,8 +44,8 @@ use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
 use once_cell::sync::Lazy;
 use osh_dir_std::{
-    constants, cover_listing, cover_listing_with, data::STDS, rate_listing, rate_listing_with,
-    BoxResult, DEFAULT_STD_NAME,
+    constants, cover_listing, cover_listing_with, data::STDS, format::Rec, rate_listing,
+    rate_listing_with, BoxResult, DEFAULT_STD_NAME,
 };
 use regex::Regex;
 use tracing::error;
@@ -220,8 +220,26 @@ fn main() -> BoxResult<()> {
                 .map(|(k, v)| (k.to_owned(), v))
                 .collect();
 
-                // TODO Output the coverage/mapping in JSON
-                todo!();
+                let added_used_records = coverage
+                    .iter()
+                    .map(|(std_name, cvrg)| {
+                        let records = cvrg
+                            .r#in
+                            .keys()
+                            .map(ToOwned::to_owned)
+                            .map(Rec::to_record)
+                            .collect::<Vec<_>>();
+                        (std_name, (("coverage", cvrg), ("records", records)))
+                    })
+                    .collect::<Vec<_>>();
+
+                log::info!("Converting results to JSON ...");
+                let json_coverage = if pretty {
+                    serde_json::to_string_pretty(&added_used_records)
+                } else {
+                    serde_json::to_string(&added_used_records)
+                }?;
+                out_stream.write_all(json_coverage.as_bytes())?;
             }
             _ => {
                 error!("Sub-command not implemented: '{sub_com_name}'");

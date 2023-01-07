@@ -2,10 +2,14 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use std::{borrow::Cow, fs, path::Path};
+use std::{
+    borrow::Cow,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use regex::Regex;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize, Serializer};
 
 use codify::Codify;
 
@@ -21,7 +25,7 @@ pub enum ParseError {
     Csv(#[from] csv::Error),
 }
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub enum OptBool {
     False,
@@ -51,8 +55,8 @@ impl OptBool {
     }
 }
 
-#[derive(Debug)]
-pub struct RegexEq(pub Regex);
+#[derive(Debug, Serialize)]
+pub struct RegexEq(#[serde(with = "serde_regex")] pub Regex);
 
 impl PartialEq for RegexEq {
     fn eq(&self, other: &Self) -> bool {
@@ -121,9 +125,23 @@ impl Rec<'_> {
     }
 }
 
+/// We serialize this to only its `path`
+/// as a HACK that allows us to implement serializing a [`crate::coverage::Coverage`]
+/// to JSON with a shortcut, using serde,
+/// without creating and filling an additional struct
+/// just for JSON serialization.
+impl Serialize for Rec<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.path)
+    }
+}
+
 // NOTE The field names in this struct are NOT in the same order as
 // the fields in the CSV data!
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct Record {
     pub path: String,
@@ -171,6 +189,20 @@ impl Codify for Record {
 pub struct DirStd {
     pub name: &'static str,
     pub records: Vec<Rec<'static>>,
+}
+
+/// We serialize this to only its `name`
+/// as a HACK that allows us to implement serializing a [`crate::coverage::Coverage`]
+/// to JSON with a shortcut, using serde,
+/// without creating and filling an additional struct
+/// just for JSON serialization.
+impl Serialize for DirStd {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.name)
+    }
 }
 
 pub struct DirStandard {

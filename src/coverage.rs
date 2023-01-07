@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 use regex::Regex;
+use serde::Serialize;
 use std::{collections::HashMap, path::PathBuf, rc::Rc};
 use tracing::trace;
 
@@ -19,7 +20,7 @@ pub struct Checker {
 
 /// Indicates which relative paths of all dirs and files in a project
 /// are covered by what parts of a specific dir standard.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Coverage {
     /// The standard that coverage was checked for
     pub std: &'static DirStd,
