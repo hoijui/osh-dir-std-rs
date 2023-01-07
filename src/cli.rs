@@ -110,7 +110,7 @@ fn subcom_map() -> Command {
 
 fn arg_standard() -> Arg {
     Arg::new(A_L_STANDARD)
-        .help("Which OSH directory standard to chekc coverage for")
+        .help("Which OSH directory standard to check coverage for or rate")
         .num_args(1)
         .short(A_S_STANDARD)
         .long(A_L_STANDARD)
@@ -140,7 +140,7 @@ fn arg_best_fit() -> Arg {
 
 fn arg_all() -> Arg {
     Arg::new(A_L_ALL)
-        .help("Check coverage versus all OSH directory standards")
+        .help("Check coverage/do mapping versus all OSH directory standards")
         .short(A_S_ALL)
         .long(A_L_ALL)
         .alias("all-standards")
