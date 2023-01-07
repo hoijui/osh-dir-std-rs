@@ -195,6 +195,7 @@ fn main() -> BoxResult<()> {
                     Some(std) => vec![rate_listing_with(dirs_and_files, &ignored_paths, std)?],
                 };
 
+                log::info!("Converting results to JSON ...");
                 let json_rating = if pretty {
                     serde_json::to_string_pretty(&rating)
                 } else {
