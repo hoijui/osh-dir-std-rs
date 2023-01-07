@@ -14,6 +14,9 @@ pub enum ParseError {
     #[error("Failed to read data to be parsed (e.g. from a file)")]
     IO(#[from] std::io::Error),
 
+    #[error("Failed to extract directory name from CSV path: '{0}'")]
+    DirNameExtraction(PathBuf),
+
     #[error("Failed to parse CSV: {0}")]
     Csv(#[from] csv::Error),
 }
@@ -154,10 +157,12 @@ impl Codify for Record {
 
 #[derive(Debug)]
 pub struct DirStd {
+    pub name: &'static str,
     pub records: Vec<Rec<'static>>,
 }
 
 pub struct DirStandard {
+    pub name: String,
     pub records: Vec<Record>,
 }
 
@@ -165,8 +170,10 @@ impl Codify for DirStandard {
     fn init_code(&self) -> Cow<'static, str> {
         Cow::Owned(format!(
             r##"format::DirStd {{
+            name: "{}",
             records: {},
         }}"##,
+            self.name,
             self.records.init_code(),
         ))
     }
@@ -182,7 +189,10 @@ impl DirStandard {
     /// or parsing it failed.
     /// The most likely reason for the later would be,
     /// that this code is not adjusted to the version of the standards CSV format.
-    pub fn from_csv_reader<R: std::io::Read>(rdr: &mut csv::Reader<R>) -> Result<Self, ParseError> {
+    pub fn from_csv_reader<R: std::io::Read>(
+        name: String,
+        rdr: &mut csv::Reader<R>,
+    ) -> Result<Self, ParseError> {
         let mut records_raw = vec![];
         // with this we ensure, that all the records `indicativeness` values
         // add up to ~= 1.0
@@ -207,7 +217,7 @@ impl DirStandard {
             records.push(record);
         }
 
-        Ok(Self { records })
+        Ok(Self { name, records })
     }
 
     /// Reads a directory standard from a CSV file,
@@ -223,6 +233,13 @@ impl DirStandard {
         let mut rdr = csv::ReaderBuilder::new()
             .has_headers(true)
             .from_reader(fs::File::open(csv_file)?);
-        Self::from_csv_reader(&mut rdr)
+        let name = csv_file
+            .parent()
+            .ok_or_else(|| ParseError::DirNameExtraction(csv_file.to_path_buf()))?
+            .file_name()
+            .ok_or_else(|| ParseError::DirNameExtraction(csv_file.to_path_buf()))?
+            .to_string_lossy()
+            .to_string();
+        Self::from_csv_reader(name, &mut rdr)
     }
 }
