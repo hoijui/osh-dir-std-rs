@@ -32,9 +32,9 @@
 mod cli;
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     env,
-    io::{self, Write},
+    io::{self, BufRead, Write},
     path::{Path, PathBuf},
     rc::Rc,
     str::FromStr,
@@ -44,8 +44,7 @@ use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
 use once_cell::sync::Lazy;
 use osh_dir_std::{
-    constants, cover_listing, cover_listing_with, data::STDS, format::Rec, rate_listing,
-    rate_listing_with, BoxResult, DEFAULT_STD_NAME,
+    constants, cover_listing_by_stds, format::Rec, rate_listing_by_stds, stds::Standards, BoxResult,
 };
 use regex::Regex;
 use tracing::error;
@@ -61,24 +60,38 @@ fn ignored_paths(args: &ArgMatches) -> Regex {
     ignored_paths
 }
 
-/// Returns either the name of the specific OSH directory standard to use,
-/// or `None`, meaning: use all standards.
-fn standard(args: &ArgMatches) -> Option<&str> {
-    let (std, stds_indicator) = if args.get_flag(cli::A_L_ALL) {
-        (None, String::from("<ALL>"))
-    } else {
-        args.get_one::<String>(cli::A_L_STANDARD).map_or_else(
-            || {
-                (
-                    Some(DEFAULT_STD_NAME),
-                    format!("default({DEFAULT_STD_NAME})"),
-                )
-            },
-            |std| (Some(std), std.to_string()),
-        )
-    };
-    log::info!("Using standard(s): {stds_indicator}");
-    std
+fn input_stream(args: &ArgMatches) -> io::Result<Box<dyn BufRead>> {
+    let input_listing = args.get_one::<PathBuf>(A_L_INPUT_LISTING);
+    log::info!(
+        "Reading input listing from {}.",
+        cli_utils::create_input_reader_description(&input_listing)
+    );
+    cli_utils::create_input_reader(&input_listing)
+}
+
+fn dirs_and_files(
+    listing_strm: &mut Box<dyn BufRead>,
+) -> impl Iterator<Item = BoxResult<Rc<PathBuf>>> + '_ {
+    let lines_iter = cli_utils::lines_iterator(listing_strm, true);
+    let files = lines_iter.map(line_to_path_res);
+
+    // In case the input-listing only contains files,
+    // we also want to iterate over their ancestor dirs,
+    // while avoiding duplicate visiting of those.
+    // As a side-effect, this also filters out duplicate input of any kind,
+    // file or directory.
+    // However, this also creates a cache in memory,
+    // that in the end will usually be as big as the whole input-listing itsself.
+    // TODO Thus we might want to add an option to skip this filtering, in case of large input listings.
+    let mut dirs_adder = DirsAdder::new();
+    files.flat_map(move |path_res| dirs_adder.call_mut(path_res))
+}
+
+fn standards(args: &ArgMatches) -> Standards {
+    let all = args.get_flag(cli::A_L_ALL);
+    let best_fit = args.get_flag(cli::A_L_BEST_FIT);
+    let std = args.get_one::<String>(cli::A_L_STANDARD);
+    Standards::from_opts(all, best_fit, std)
 }
 
 fn out_stream(args: &ArgMatches) -> io::Result<Box<dyn Write>> {
@@ -159,41 +172,21 @@ fn main() -> BoxResult<()> {
         print_version_and_exit(quiet);
     }
 
-    let input_listing = args.get_one::<PathBuf>(A_L_INPUT_LISTING);
     let ignored_paths = ignored_paths(args);
     let pretty = true; // TODO Make this a CLI arg
 
     if let Some((sub_com_name, _sub_com_args)) = args.subcommand() {
-        log::info!(
-            "Reading input listing from {}.",
-            cli_utils::create_input_reader_description(&input_listing)
-        );
-        let mut listing_strm = cli_utils::create_input_reader(&input_listing)?;
-        let lines_iter = cli_utils::lines_iterator(&mut listing_strm, true);
-        let files = lines_iter.map(line_to_path_res);
+        let mut listing_strm = input_stream(args)?;
+        let dirs_and_files = dirs_and_files(&mut listing_strm);
 
-        // In case the input-listing only contains files,
-        // we also want to iterate over their ancestor dirs,
-        // while avoiding duplicate visiting of those.
-        // As a side-effect, this also filters out duplicate input of any kind,
-        // file or directory.
-        // However, this also creates a cache in memory,
-        // that in the end will usually be as big as the whole input-listing itsself.
-        // TODO Thus we might want to add an option to skip this filtering, in case of large input listings.
-        let mut dirs_adder = DirsAdder::new();
-        let dirs_and_files = files.flat_map(|path_res| dirs_adder.call_mut(path_res));
-
-        let stds = standard(args);
+        let stds = standards(args);
 
         let mut out_stream = out_stream(args)?;
 
         match sub_com_name {
             cli::SC_N_RATE => {
                 log::info!("Rating listing according to standard(s) ...");
-                let rating = match stds {
-                    None => rate_listing(dirs_and_files, &ignored_paths)?,
-                    Some(std) => vec![rate_listing_with(dirs_and_files, &ignored_paths, std)?],
-                };
+                let rating = rate_listing_by_stds(dirs_and_files, &ignored_paths, &stds)?;
 
                 log::info!("Converting results to JSON ...");
                 let json_rating = if pretty {
@@ -205,31 +198,18 @@ fn main() -> BoxResult<()> {
             }
             cli::SC_N_MAP => {
                 log::info!("Mapping listing to standard(s) ...");
-                let coverage: HashMap<String, _> = match stds {
-                    None => cover_listing(dirs_and_files, &ignored_paths)?,
-                    Some(std) => vec![(
-                        std,
-                        cover_listing_with(
-                            dirs_and_files,
-                            &ignored_paths,
-                            STDS.get(std).expect("Clap already checked the name!"),
-                        )?,
-                    )],
-                }
-                .into_iter()
-                .map(|(k, v)| (k.to_owned(), v))
-                .collect();
+                let coverage = cover_listing_by_stds(dirs_and_files, &ignored_paths, &stds)?;
 
                 let added_used_records = coverage
                     .iter()
-                    .map(|(std_name, cvrg)| {
+                    .map(|cvrg| {
                         let records = cvrg
                             .r#in
                             .keys()
                             .map(ToOwned::to_owned)
                             .map(Rec::to_record)
                             .collect::<Vec<_>>();
-                        (std_name, (("coverage", cvrg), ("records", records)))
+                        (("coverage", cvrg), ("records", records))
                     })
                     .collect::<Vec<_>>();
 

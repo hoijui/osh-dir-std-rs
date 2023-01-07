@@ -2,28 +2,27 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use std::{
-    path::{Path, PathBuf},
-    rc::Rc,
-};
+use std::{path::PathBuf, rc::Rc};
 
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use tracing::trace;
 
-use crate::{cover_listing, coverage::cover_listing_with, data::STDS, Coverage};
+use crate::{
+    cover_listing, coverage::cover_listing_with, data::STDS, stds::Standards, BoxResult, Coverage,
+};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Rating {
-    name: String,
-    factor: f32,
+    pub name: String,
+    pub factor: f32,
 }
 
 impl Rating {
     /// Calculates how much the input listing adheres to the input dir standard.
     /// 0.0 means not at all, 1.0 means totally/fully.
     #[must_use]
-    pub fn rate_coverage<P: AsRef<Path>>(name: String, coverage: &Coverage) -> Self {
+    pub fn rate_coverage(coverage: &Coverage) -> Self {
         let mut pos_rating = 0.0;
         let mut matches_records = false;
         for (record, paths) in &coverage.r#in {
@@ -36,6 +35,7 @@ impl Rating {
                 matches_records = true;
             }
         }
+        let name = coverage.std.name.to_owned();
         if !matches_records {
             return Self { name, factor: 0.0 };
         }
@@ -74,9 +74,9 @@ where
 {
     let coverages = cover_listing(dirs_and_files, ignored_paths)?;
     let mut ratings = vec![];
-    for (std, coverage) in coverages {
+    for coverage in coverages {
         ratings.push(Rating {
-            name: std.to_owned(),
+            name: coverage.std.name.to_owned(),
             factor: coverage.rate(),
         });
     }
@@ -111,5 +111,64 @@ where
     Ok(Rating {
         name: std_name.to_string(),
         factor: coverage.rate(),
+    })
+}
+
+/// Given a set of ratings, filters out the one with the higest factor.
+/// If multiple have the same, highest factor, the first one is returned.
+///
+/// # Errors
+///
+/// If none of the supplied ratings has a factor higher then 0.0.
+pub fn best_fit(ratings: &Vec<Rating>) -> BoxResult<&'_ Rating> {
+    let mut max_rating: Option<&Rating> = None;
+    for rating in ratings {
+        if let Some(max_rating_val) = max_rating {
+            if rating.factor > max_rating_val.factor {
+                max_rating = Some(rating);
+            }
+        } else {
+            max_rating = Some(rating);
+        }
+    }
+    max_rating
+        .ok_or("No rating with a factor bigger then 0.0 found")
+        .map_err(Into::into)
+}
+
+/// Given a set of the relative paths of all dirs and files in a project,
+/// for each of the known dir standards from
+/// <https://github.com/hoijui/osh-dir-std/>,
+/// calculate how likely it seems
+/// that the project is following this standard,
+/// and then only return the rating for the best fit.
+///
+/// # Errors
+///
+/// If any of the input listing entires is an error,
+/// usually caused by an I/O issue.
+pub fn rate_listing_by_stds<T>(
+    dirs_and_files: T,
+    ignored_paths: &Regex,
+    stds: &Standards,
+) -> BoxResult<Vec<Rating>>
+where
+    T: Iterator<Item = BoxResult<Rc<PathBuf>>>,
+{
+    Ok(match stds {
+        Standards::Default => vec![rate_listing_with(
+            dirs_and_files,
+            ignored_paths,
+            crate::DEFAULT_STD_NAME,
+        )?],
+        Standards::All => rate_listing(dirs_and_files, ignored_paths)?,
+        Standards::BestFit => {
+            let ratings = rate_listing(dirs_and_files, ignored_paths).map(Into::into)?;
+            let max_rating = best_fit(&ratings)?;
+            vec![(*max_rating).clone()]
+        }
+        Standards::Specific(std_name) => {
+            vec![rate_listing_with(dirs_and_files, ignored_paths, std_name)?]
+        }
     })
 }

@@ -7,6 +7,8 @@ use serde::Serialize;
 use std::{collections::HashMap, path::PathBuf, rc::Rc};
 use tracing::trace;
 
+use crate::{best_fit, data::STDS, stds::Standards, BoxResult, Rating, DEFAULT_STD_NAME};
+
 use super::format::DirStd;
 
 /// Indicates which relative paths of all dirs and files in a project
@@ -54,11 +56,10 @@ impl Checker {
     }
 
     /// Creates a map of checkers with one entry for each standard.
-    pub fn new_all(ignored_paths: &Regex) -> HashMap<&'static str, Self> {
-        let mut checkers = HashMap::new();
-        for (std_name, std_records) in super::data::STDS.iter() {
-            let std_checker = Self::new(std_records, ignored_paths);
-            checkers.insert(std_name as &str, std_checker);
+    pub fn new_all(ignored_paths: &Regex) -> Vec<Self> {
+        let mut checkers = Vec::new();
+        for (_std_name, std_records) in super::data::STDS.iter() {
+            checkers.push(Self::new(std_records, ignored_paths));
         }
         checkers
     }
@@ -149,23 +150,20 @@ impl Coverage {
 ///
 /// If any of the input listing entires is an error,
 /// usually caused by an I/O issue.
-pub fn cover_listing<T, E>(
-    dirs_and_files: T,
-    ignored_paths: &Regex,
-) -> Result<Vec<(&'static str, Coverage)>, E>
+pub fn cover_listing<T, E>(dirs_and_files: T, ignored_paths: &Regex) -> Result<Vec<Coverage>, E>
 where
     T: Iterator<Item = Result<Rc<PathBuf>, E>>,
 {
     let mut checkers = Checker::new_all(ignored_paths);
     for dir_or_file_res in dirs_and_files {
         let dir_or_file = dir_or_file_res?;
-        for checker in checkers.values_mut() {
+        for checker in &mut checkers {
             checker.cover(&dir_or_file);
         }
     }
     let mut coverages = vec![];
-    for (std, checker) in checkers {
-        coverages.push((std, checker.coverage));
+    for checker in checkers {
+        coverages.push(checker.coverage);
     }
     Ok(coverages)
 }
@@ -192,4 +190,47 @@ where
         checker.cover(&dir_or_file);
     }
     Ok(checker.coverage)
+}
+
+/// Given a set of the relative paths of all dirs and files in a project,
+/// for each of the known dir standards from
+/// <https://github.com/hoijui/osh-dir-std/>,
+/// calculate how likely it seems
+/// that the project is following this standard,
+/// and then only return the coverage for the best fit.
+///
+/// # Errors
+///
+/// If any of the input listing entires is an error,
+/// usually caused by an I/O issue.
+pub fn cover_listing_by_stds<T>(
+    dirs_and_files: T,
+    ignored_paths: &Regex,
+    stds: &Standards,
+) -> BoxResult<Vec<Coverage>>
+where
+    T: Iterator<Item = BoxResult<Rc<PathBuf>>>,
+{
+    Ok(match stds {
+        Standards::Default => {
+            let std = STDS
+                .get(DEFAULT_STD_NAME)
+                .expect("Clap already checked the name!");
+            vec![cover_listing_with(dirs_and_files, ignored_paths, std)?]
+        }
+        Standards::All => cover_listing(dirs_and_files, ignored_paths)?,
+        Standards::BestFit => {
+            let coverages = cover_listing(dirs_and_files, ignored_paths)?;
+            let ratings = coverages.iter().map(Rating::rate_coverage).collect();
+            let max_rating = best_fit(&ratings)?;
+            coverages
+                .into_iter()
+                .filter(|cvrg| cvrg.std.name == max_rating.name)
+                .collect()
+        }
+        Standards::Specific(std_name) => {
+            let std = STDS.get(std_name).expect("Clap already checked the name!");
+            vec![cover_listing_with(dirs_and_files, ignored_paths, std)?]
+        }
+    })
 }

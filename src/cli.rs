@@ -28,6 +28,9 @@ pub const SC_N_MAP: &str = "map";
 pub const A_L_STANDARD: &str = "standard";
 pub const A_S_STANDARD: char = 's';
 
+pub const A_L_BEST_FIT: &str = "best-fit";
+pub const A_S_BEST_FIT: char = 'b';
+
 pub const A_L_ALL: &str = "all";
 pub const A_S_ALL: char = 'a';
 
@@ -115,7 +118,23 @@ fn arg_standard() -> Arg {
         .value_parser(STD_NAMES)
         .value_name("STD")
         .conflicts_with(A_L_ALL)
+        .conflicts_with(A_L_BEST_FIT)
         .action(ArgAction::Set)
+        .global(true)
+}
+
+fn arg_best_fit() -> Arg {
+    Arg::new(A_L_BEST_FIT)
+        .help("Use which ever standard seems to fit best")
+        .short(A_S_BEST_FIT)
+        .long(A_L_BEST_FIT)
+        .alias("best")
+        .alias("fittest")
+        .alias("fit")
+        .alias("bf")
+        .conflicts_with(A_L_ALL)
+        .conflicts_with(A_L_STANDARD)
+        .action(ArgAction::SetTrue)
         .global(true)
 }
 
@@ -127,6 +146,7 @@ fn arg_all() -> Arg {
         .alias("all-standards")
         .alias("all-stds")
         .conflicts_with(A_L_STANDARD)
+        .conflicts_with(A_L_BEST_FIT)
         .action(ArgAction::SetTrue)
         .global(true)
 }
@@ -189,10 +209,11 @@ pub fn arg_matcher() -> Command {
         .arg(arg_input_listing())
         .arg(arg_ignore_paths())
         .arg(arg_standard())
+        .arg(arg_best_fit())
         .arg(arg_all())
         .group(
             ArgGroup::new("grp_standard")
-                .args([A_L_STANDARD, A_L_ALL])
+                .args([A_L_STANDARD, A_L_BEST_FIT, A_L_ALL])
                 .required(true),
         )
         .subcommand(subcom_rate())
