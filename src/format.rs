@@ -103,6 +103,24 @@ impl core::hash::Hash for Rec<'_> {
     }
 }
 
+impl Rec<'_> {
+    #[must_use]
+    #[allow(dead_code)]
+    pub fn to_record(&self) -> Record {
+        Record {
+            path: self.path.to_owned(),
+            fixed: self.fixed,
+            source: self.source,
+            module: self.module,
+            arbitrary_content: self.arbitrary_content.into(),
+            indicativeness: self.indicativeness,
+            regex: self.regex.0.clone(),
+            description: self.description.to_owned(),
+            sample_content: self.sample_content.to_owned(),
+        }
+    }
+}
+
 // NOTE The field names in this struct are NOT in the same order as
 // the fields in the CSV data!
 #[derive(Debug, Deserialize, Clone)]
