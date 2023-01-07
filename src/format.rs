@@ -27,17 +27,17 @@ pub enum OptBool {
     None,
 }
 
-impl OptBool {
-    #[must_use]
-    #[allow(dead_code)]
-    pub const fn to_native(self) -> Option<bool> {
-        match self {
-            Self::False => Some(false),
-            Self::True => Some(true),
-            Self::None => None,
+impl From<Option<bool>> for OptBool {
+    fn from(value: Option<bool>) -> Self {
+        match value {
+            Some(false) => Self::False,
+            Some(true) => Self::True,
+            None => Self::None,
         }
     }
+}
 
+impl OptBool {
     #[must_use]
     pub const fn init_code(&self) -> &str {
         match self {
