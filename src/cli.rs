@@ -213,7 +213,7 @@ pub fn arg_matcher() -> Command {
         .arg(arg_all())
         .group(
             ArgGroup::new("grp_standard")
-                .args([A_L_STANDARD, A_L_BEST_FIT, A_L_ALL])
+                .args([A_L_STANDARD, A_L_BEST_FIT, A_L_ALL, A_L_VERSION])
                 .required(true),
         )
         .subcommand(subcom_rate())
