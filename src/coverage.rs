@@ -21,8 +21,8 @@ pub struct Checker {
 /// are covered by what parts of a specific dir standard.
 #[derive(Debug)]
 pub struct Coverage {
-    /// Name of the standard that coverage was checked for
-    pub std: &'static super::format::DirStd,
+    /// The standard that coverage was checked for
+    pub std: &'static DirStd,
     /// Number of viable paths in the input-dir.
     /// These are all paths in the input dir,
     /// minus the ignored ones.
