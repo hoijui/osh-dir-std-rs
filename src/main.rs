@@ -47,7 +47,13 @@ use osh_dir_std::{
     constants, cover_listing_by_stds, format::Rec, rate_listing_by_stds, stds::Standards, BoxResult,
 };
 use regex::Regex;
-use tracing::error;
+use tracing::{error, metadata::LevelFilter};
+use tracing_subscriber::{
+    fmt,
+    prelude::*,
+    reload::{self, Handle},
+    Registry,
+};
 
 pub static EMPTY_PATH: Lazy<PathBuf> = Lazy::new(PathBuf::new);
 
@@ -160,10 +166,30 @@ impl DirsAdder {
     }
 }
 
-fn main() -> BoxResult<()> {
-    tracing_subscriber::fmt()
-        .with_writer(std::io::stderr)
+/// Sets up logging, with a way to change the log level later on.
+///
+/// Copied from:
+/// <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/reload/index.html>
+///
+/// # Errors
+///
+/// If initializing the registry failed.
+fn setup_logging() -> BoxResult<Handle<LevelFilter, Registry>> {
+    let level = if cfg!(debug_assertions) {
+        LevelFilter::DEBUG
+    } else {
+        LevelFilter::INFO
+    };
+    let (filter, reload_handle) = reload::Layer::new(level);
+    tracing_subscriber::registry()
+        .with(filter)
+        .with(fmt::Layer::default())
         .try_init()?;
+    Ok(reload_handle)
+}
+
+fn main() -> BoxResult<()> {
+    let log_reload_handle = setup_logging()?;
 
     let arg_matcher = cli::arg_matcher();
     let args = &arg_matcher.get_matches();
@@ -172,6 +198,9 @@ fn main() -> BoxResult<()> {
     let version = args.get_flag(A_L_VERSION);
     if version {
         print_version_and_exit(quiet);
+    }
+    if quiet {
+        log_reload_handle.modify(|filter| *filter = LevelFilter::WARN)?;
     }
 
     let ignored_paths = ignored_paths(args);
