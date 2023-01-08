@@ -79,7 +79,12 @@ fn dirs_and_files(
     listing_strm: &mut Box<dyn BufRead>,
 ) -> impl Iterator<Item = BoxResult<Rc<PathBuf>>> + '_ {
     let lines_iter = cli_utils::lines_iterator(listing_strm, true);
-    let files = lines_iter.map(line_to_path_res);
+    let no_comments_lines = lines_iter.filter(|line_res| {
+        line_res
+            .as_ref()
+            .map_or(true, |line| !(line.starts_with('#') || line.is_empty()))
+    });
+    let files = no_comments_lines.fuse().map(line_to_path_res);
 
     // In case the input-listing only contains files,
     // we also want to iterate over their ancestor dirs,
