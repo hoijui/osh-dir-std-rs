@@ -171,24 +171,25 @@ impl DirsAdder {
     }
 }
 
-/// Sets up logging, with a way to change the log level later on.
-///
-/// Copied from:
-/// <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/reload/index.html>
+/// Sets up logging, with a way to change the log level later on,
+/// and with all output going to stderr,
+/// as suggested by <https://clig.dev/>.
 ///
 /// # Errors
 ///
-/// If initializing the registry failed.
+/// If initializing the registry (logger) failed.
 fn setup_logging() -> BoxResult<Handle<LevelFilter, Registry>> {
-    let level = if cfg!(debug_assertions) {
+    let level_filter = if cfg!(debug_assertions) {
         LevelFilter::DEBUG
     } else {
         LevelFilter::INFO
     };
-    let (filter, reload_handle) = reload::Layer::new(level);
+
+    let layer = fmt::layer().map_writer(move |_| io::stderr);
+    let (filter, reload_handle) = reload::Layer::new(level_filter);
     tracing_subscriber::registry()
         .with(filter)
-        .with(fmt::Layer::default())
+        .with(layer)
         .try_init()?;
     Ok(reload_handle)
 }
