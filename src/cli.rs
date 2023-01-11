@@ -190,14 +190,14 @@ pub fn arg_matcher() -> Command {
         .after_help("Please use --help for Examples.")
         .after_long_help(format!(
             r#"Examples:
-  $ # 1. Lists git tracked files and directories,
+  $ # 1. Lists git tracked files,
   $ #    and rates them with all the known standards:
-  $ ls -1 -d $(git ls-tree -rt HEAD --name-only) \
+  $ git ls-files --recurse-submodules \
         | {} rate
 
-  $ # 2. Lists git tracked files and directories,
+  $ # 2. Lists git tracked files,
   $ #    and maps them to the default standard:
-  $ ls -1 -d $(git ls-tree -rt HEAD --name-only) \
+  $ git ls-files --recurse-submodules \
         | {} map
 "#,
             clap::crate_name!(),
