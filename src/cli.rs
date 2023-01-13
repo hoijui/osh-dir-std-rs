@@ -193,11 +193,13 @@ pub fn arg_matcher() -> Command {
   $ # 1. Lists git tracked files,
   $ #    and rates them with all the known standards:
   $ git ls-files --recurse-submodules \
+        | sed -e 's/^"\(.*\)"$/\1/' \
         | {} rate
 
   $ # 2. Lists git tracked files,
   $ #    and maps them to the default standard:
   $ git ls-files --recurse-submodules \
+        | sed -e 's/^"\(.*\)"$/\1/' \
         | {} map
 "#,
             clap::crate_name!(),

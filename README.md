@@ -54,7 +54,7 @@ to rate the project against the known directory standards:
 [git](https://git-scm.com/):
 
 ```shell
-git ls-files --recurse-submodules | osh-dir-std rate
+git ls-files --recurse-submodules | sed -e 's/^"\(.*\)"$/\1/' | osh-dir-std rate
 ```
 
 [SVN](https://subversion.apache.org/):
