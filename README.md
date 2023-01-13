@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2022 Robin Vobruba <hoijui.quaero@gmail.com>
+SPDX-FileCopyrightText: 2022-2023 Robin Vobruba <hoijui.quaero@gmail.com>
 
 SPDX-License-Identifier: CC0-1.0
 -->
