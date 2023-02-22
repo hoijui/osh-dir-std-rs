@@ -16,6 +16,13 @@ SPDX-License-Identifier: CC0-1.0
     https://custom-icon-badges.demolab.com/badge/-FCHH-dddddd.svg?logo=fc_logo)](
     https://fabcity.hamburg)
 
+[![In cooperation with FabCity Hamburg](
+    https://custom-icon-badges.demolab.com/badge/-FCHH-dddddd.svg?logo=fc_logo)](
+    https://fabcity.hamburg)
+[![In cooperation with Open Source Ecology Germany](
+    https://custom-icon-badges.demolab.com/badge/-OSEG-555555.svg?logo=oseg_logo)](
+    https://opensourceecology.de)
+
 * OSH: _**O**pen **S**ource **H**ardware_
 
 Code that helps humans and machines deal with
