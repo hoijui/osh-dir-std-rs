@@ -135,3 +135,13 @@ fn unixish_res_fixed() -> BoxResult<()> {
   Checks an OSH project against a set of predefined checks,
   to try to assess its overall machine-readability and openness. \
   (also uses this tool internally)
+
+## Funding
+
+This project was funded by the European Regional Development Fund (ERDF)
+in the context of the [INTERFACER Project](https://www.interfacerproject.eu/),
+from November 2022 (project start)
+until March 2023.
+
+![Logo of the EU ERDF program](
+    https://cloud.fabcity.hamburg/s/TopenKEHkWJ8j5P/download/logo-eu-erdf.png)
