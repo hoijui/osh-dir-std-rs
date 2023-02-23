@@ -44,9 +44,14 @@ use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
 use once_cell::sync::Lazy;
 use osh_dir_std::{
-    constants, cover_listing_by_stds, format::Rec, rate_listing_by_stds, stds::Standards, BoxResult,
+    constants, cover_listing_by_stds,
+    format::{Rec, Record},
+    rate_listing_by_stds,
+    stds::Standards,
+    BoxResult, Coverage,
 };
 use regex::Regex;
+use serde::Serialize;
 use tracing::{error, metadata::LevelFilter};
 use tracing_subscriber::{
     fmt,
@@ -195,6 +200,29 @@ fn setup_logging() -> BoxResult<Handle<LevelFilter, Registry>> {
     Ok(reload_handle)
 }
 
+#[derive(Serialize)]
+struct CovEntry {
+    name: String,
+    coverage: Coverage,
+    records: Vec<Record>,
+}
+
+impl From<Coverage> for CovEntry {
+    fn from(coverage: Coverage) -> Self {
+        let records = coverage
+            .r#in
+            .keys()
+            .map(ToOwned::to_owned)
+            .map(Rec::to_record)
+            .collect::<Vec<_>>();
+        Self {
+            name: coverage.std.name.to_owned(),
+            coverage,
+            records,
+        }
+    }
+}
+
 fn main() -> BoxResult<()> {
     let log_reload_handle = setup_logging()?;
 
@@ -238,24 +266,13 @@ fn main() -> BoxResult<()> {
                 log::info!("Mapping listing to standard(s) ...");
                 let coverage = cover_listing_by_stds(dirs_and_files, &ignored_paths, &stds)?;
 
-                let added_used_records = coverage
-                    .iter()
-                    .map(|cvrg| {
-                        let records = cvrg
-                            .r#in
-                            .keys()
-                            .map(ToOwned::to_owned)
-                            .map(Rec::to_record)
-                            .collect::<Vec<_>>();
-                        (("coverage", cvrg), ("records", records))
-                    })
-                    .collect::<Vec<_>>();
+                let decorated_cov = coverage.into_iter().map(CovEntry::from).collect::<Vec<_>>();
 
                 log::info!("Converting results to JSON ...");
                 let json_coverage = if pretty {
-                    serde_json::to_string_pretty(&added_used_records)
+                    serde_json::to_string_pretty(&decorated_cov)
                 } else {
-                    serde_json::to_string(&added_used_records)
+                    serde_json::to_string(&decorated_cov)
                 }?;
                 out_stream.write_all(json_coverage.as_bytes())?;
             }
