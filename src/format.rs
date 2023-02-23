@@ -225,6 +225,18 @@ pub struct DirStandard {
     pub records: Vec<Record>,
 }
 
+impl PartialEq for DirStandard {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
+impl core::hash::Hash for DirStandard {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
+
 impl Codify for DirStandard {
     fn init_code(&self) -> Cow<'static, str> {
         Cow::Owned(format!(
