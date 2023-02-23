@@ -20,9 +20,9 @@ fn find_rec(std: &str, record_path: &str) -> BoxResult<&'static Rec<'static>> {
 }
 
 #[test]
-fn unixish_res_fixed() -> BoxResult<()> {
+fn unixish_res_normative() -> BoxResult<()> {
     let rec = find_rec("unixish", "res/")?;
-    assert!(rec.fixed);
+    assert!(rec.normative);
     Ok(())
 }
 

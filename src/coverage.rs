@@ -7,7 +7,13 @@ use serde::Serialize;
 use std::{collections::HashMap, path::PathBuf, rc::Rc};
 use tracing::trace;
 
-use crate::{best_fit, data::STDS, stds::Standards, BoxResult, Rating, DEFAULT_STD_NAME};
+use crate::{
+    best_fit,
+    data::STDS,
+    stds::Standards,
+    tree::{self, RNode},
+    BoxResult, Rating, DEFAULT_STD_NAME,
+};
 
 use super::format::DirStd;
 
@@ -18,6 +24,9 @@ pub struct Checker {
     /// the coverage in creation
     pub coverage: Coverage,
     ignored_paths: Regex,
+    arbitrary_content_rgxs: Option<Vec<Regex>>,
+    generated_content_rgxs: Option<Vec<Regex>>,
+    records_tree: Option<(RNode<'static>, Vec<RNode<'static>>)>,
 }
 
 /// Indicates which relative paths of all dirs and files in a project
@@ -34,9 +43,80 @@ pub struct Coverage {
     /// that matched one or more paths in the input,
     /// together with all those matched paths.
     pub r#in: HashMap<&'static super::format::Rec<'static>, Vec<Rc<PathBuf>>>,
+    /// The paths in the input dir that were ignored.
+    pub ignored: Vec<Rc<PathBuf>>,
+    /// The paths in the input dir that are below an arbitrary content root of the standard.
+    /// This is similar to `ignored`, but defined in the standard itsself.
+    pub arbitrary_content: Vec<Rc<PathBuf>>,
+    /// The paths in the input dir that are below an generated content root of the standard,
+    /// or fit a generated content regex otherwise.
+    /// These paths makr files that may be tracked,
+    /// even though they might be generated.
+    /// This might make sense, because in practice,
+    /// people *will* put generated files into git repositories in OSH projects,
+    /// not the least because it is also hard to avoid in a practical manner.
+    /// To allow the standard to dictate where this might happen,
+    /// gives us a level of control,
+    /// which allwos to concentrate these files under one or a few "generated content root dirs",
+    /// which in could optionally be turned into git submodules
+    /// to improve the overall clone size of a project,
+    /// at the cost of the additional complexity of managing submodules.
+    pub generated_content: Vec<Rc<PathBuf>>,
     /// The viable paths in the input dir that did not match any record
     /// of the checked standard.
     pub out: Vec<Rc<PathBuf>>,
+}
+
+fn create_arbitrary_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
+    let mut cont_rgxs = vec![];
+    for rec_node in tree_recs.iter() {
+        let rec_brw = rec_node.borrow();
+        if let Some(rec) = rec_brw.value {
+            if let Some(arbitrary_content) = rec.arbitrary_content {
+                if arbitrary_content {
+                    if let Some(path_regex) = &rec_brw.path_regex {
+                        let rgx = if rec.directory {
+                            let mut rgx_str = path_regex.0.to_string();
+                            // This squeezes in before the final "$"
+                            rgx_str.insert_str(rgx_str.len() - 1, "/.*");
+                            Regex::new(&rgx_str).unwrap_or_else(|_| {
+                                panic!("Bad (assembled) arbitrary content dir regex '{rgx_str}'")
+                            })
+                        } else {
+                            path_regex.0.clone()
+                        };
+                        cont_rgxs.push(rgx);
+                    }
+                }
+            }
+        }
+    }
+    cont_rgxs
+}
+
+fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
+    let mut cont_rgxs = vec![];
+    for rec_node in tree_recs.iter() {
+        let rec_brw = rec_node.borrow();
+        if let Some(rec) = rec_brw.value {
+            if rec.generated {
+                if let Some(path_regex) = &rec_brw.path_regex {
+                    let rgx = if rec.directory {
+                        let mut rgx_str = path_regex.0.to_string();
+                        // This squeezes in before the final "$"
+                        rgx_str.insert_str(rgx_str.len() - 1, "/.*");
+                        Regex::new(&rgx_str).unwrap_or_else(|_| {
+                            panic!("Bad (assembled) generated content dir regex '{rgx_str}'")
+                        })
+                    } else {
+                        path_regex.0.clone()
+                    };
+                    cont_rgxs.push(rgx);
+                }
+            }
+        }
+    }
+    cont_rgxs
 }
 
 impl Checker {
@@ -49,9 +129,15 @@ impl Checker {
                 std,
                 num_paths: 0,
                 r#in: HashMap::new(),
+                ignored: Vec::new(),
+                arbitrary_content: Vec::new(),
+                generated_content: Vec::new(),
                 out: Vec::new(),
             },
             ignored_paths: ignored_paths.clone(),
+            arbitrary_content_rgxs: None,
+            generated_content_rgxs: None,
+            records_tree: None,
         }
     }
 
@@ -67,21 +153,66 @@ impl Checker {
     pub fn cover(&mut self, dir_or_file: &Rc<PathBuf>) {
         let dir_or_file_str_lossy = dir_or_file.as_ref().to_string_lossy();
         if self.ignored_paths.is_match(&dir_or_file_str_lossy) {
+            self.coverage.ignored.push(Rc::clone(dir_or_file));
             return;
         }
         self.coverage.num_paths += 1;
-        let mut matched = false;
-        for record in &self.coverage.std.records {
-            if record.regex.is_match(&dir_or_file_str_lossy) {
-                self.coverage
-                    .r#in
-                    .entry(record)
-                    .or_insert_with(Vec::new)
-                    .push(Rc::clone(dir_or_file));
-                matched = true;
+        let (_recs_tree_root, tree_recs) = self
+            .records_tree
+            .get_or_insert_with(|| tree::create(self.coverage.std));
+
+        // lazy-init arbitrary_content_rgxs
+        if self.arbitrary_content_rgxs.is_none() {
+            self.arbitrary_content_rgxs = Some(create_arbitrary_content_rgxs(tree_recs));
+        }
+
+        // lazy-init generated_content_rgxs
+        if self.generated_content_rgxs.is_none() {
+            self.generated_content_rgxs = Some(create_generated_content_rgxs(tree_recs));
+        }
+
+        // NOTE This is the version using full(-relative)-path regexes
+        //      -> much simpler and so far has more features
+        let mut matching = false;
+        for rec_node in tree_recs {
+            let rec_node_brwd = rec_node.borrow();
+            if let Some(path_regex) = &rec_node_brwd.path_regex {
+                if path_regex.is_match(dir_or_file_str_lossy.as_ref()) {
+                    matching = true;
+                    let rec = rec_node_brwd
+                        .value
+                        .expect("A tree node with path_regex set should never have a None value");
+                    self.coverage
+                        .r#in
+                        .entry(rec)
+                        .or_insert_with(Vec::new)
+                        .push(Rc::clone(dir_or_file));
+                }
             }
         }
-        if !matched {
+
+        if !matching {
+            'cont_types: for (rgx, cont) in vec![
+                (
+                    self.generated_content_rgxs.as_ref(),
+                    &mut self.coverage.generated_content,
+                ),
+                (
+                    self.arbitrary_content_rgxs.as_ref(),
+                    &mut self.coverage.arbitrary_content,
+                ),
+            ] {
+                for gen_cont_rgx in rgx.expect("Was initialized further up in this function") {
+                    if gen_cont_rgx.is_match(&dir_or_file_str_lossy) {
+                        matching = true;
+                        cont.push(Rc::clone(dir_or_file));
+                        break 'cont_types;
+                    }
+                }
+            }
+        }
+
+        if !matching {
             self.coverage.out.push(Rc::clone(dir_or_file));
         }
     }

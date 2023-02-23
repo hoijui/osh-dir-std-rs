@@ -35,6 +35,7 @@ pub mod data;
 mod evaluation;
 pub mod format;
 pub mod stds;
+pub mod tree;
 
 pub use coverage::cover_listing;
 pub use coverage::cover_listing_by_stds;
