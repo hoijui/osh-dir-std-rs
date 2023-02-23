@@ -121,7 +121,12 @@ impl Coverage {
         trace!("pr: {pos_rating}");
         trace!("out: {:#?}", self.out);
 
-        pos_rating / (pos_rating + neg_rating)
+        let total_rating = pos_rating + neg_rating;
+        if total_rating > 0.0 {
+            pos_rating / total_rating
+        } else {
+            pos_rating
+        }
     }
 
     /// Returns a list of the identified module(/parts) directories.
