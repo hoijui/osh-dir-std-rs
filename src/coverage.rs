@@ -116,9 +116,9 @@ impl Coverage {
 
         let neg_rating = self.out.len() as f32 * av_ind;
         // trace!("{:#?}", self);
-        trace!("ai: {}", av_ind);
-        trace!("nr: {}", neg_rating);
-        trace!("pr: {}", pos_rating);
+        trace!("ai: {av_ind}");
+        trace!("nr: {neg_rating}");
+        trace!("pr: {pos_rating}");
         trace!("out: {:#?}", self.out);
 
         pos_rating / (pos_rating + neg_rating)
