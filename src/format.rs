@@ -80,6 +80,15 @@ impl std::ops::Deref for RegexEq {
     }
 }
 
+impl Codify for RegexEq {
+    fn init_code(&self) -> Cow<'static, str> {
+        Cow::Owned(format!(
+            r##"format::RegexEq(Regex::new(r#"{}"#).unwrap())"##,
+            self.0
+        ))
+    }
+}
+
 #[derive(Debug)]
 pub struct Rec<'a> {
     pub path: &'a str,
