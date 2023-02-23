@@ -114,9 +114,15 @@ impl Coverage {
         }
         let av_ind = ind_sum / self.std.records.len() as f32;
 
-        let neg_rating = self.out.len() as f32 * av_ind;
+        let num_out_files = self
+            .out
+            .iter()
+            .filter(|path_buf| path_buf.as_path().is_file())
+            .count();
+        let neg_rating = num_out_files as f32 * av_ind;
         // trace!("{:#?}", self);
         trace!("ai: {av_ind}");
+        trace!("of: {num_out_files}");
         trace!("nr: {neg_rating}");
         trace!("pr: {pos_rating}");
         trace!("out: {:#?}", self.out);
