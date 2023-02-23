@@ -95,7 +95,7 @@ pub struct Rec<'a> {
 
 impl PartialEq for Rec<'_> {
     fn eq(&self, other: &Self) -> bool {
-        self.regex == other.regex
+        self.path == other.path
     }
 }
 
@@ -103,7 +103,7 @@ impl Eq for Rec<'_> {}
 
 impl core::hash::Hash for Rec<'_> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.regex.hash(state);
+        self.path.hash(state);
     }
 }
 
