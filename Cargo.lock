@@ -66,8 +66,8 @@ dependencies = [
 
 [[package]]
 name = "codify"
-version = "0.2.0"
-source = "git+https://github.com/hoijui/codify-rs.git#e6a6132fb58bae0290203ffc054d828a87717c5e"
+version = "0.4.1"
+source = "git+https://github.com/hoijui/codify-rs.git#74a2e0424df5dd9c057c3c1c868b581a2cd8fdaa"
 
 [[package]]
 name = "const_format"
