@@ -184,12 +184,13 @@ fn setup_logging() -> BoxResult<Handle<LevelFilter, Registry>> {
     } else {
         LevelFilter::INFO
     };
+    let (l_filter, reload_handle) = reload::Layer::new(level_filter);
 
-    let layer = fmt::layer().map_writer(move |_| io::stderr);
-    let (filter, reload_handle) = reload::Layer::new(level_filter);
+    let l_stderr = fmt::layer().map_writer(move |_| io::stderr);
+
     tracing_subscriber::registry()
-        .with(filter)
-        .with(layer)
+        .with(l_filter)
+        .with(l_stderr)
         .try_init()?;
     Ok(reload_handle)
 }
