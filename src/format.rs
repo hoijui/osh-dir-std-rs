@@ -166,6 +166,12 @@ pub struct Record {
     pub sample_content: String,
 }
 
+impl PartialEq for Record {
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path
+    }
+}
+
 impl Codify for Record {
     fn init_code(&self) -> Cow<'static, str> {
         Cow::Owned(format!(
