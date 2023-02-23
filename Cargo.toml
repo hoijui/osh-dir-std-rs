@@ -4,7 +4,7 @@
 
 [package]
 name = "osh-dir-std"
-version = "0.3.3"
+version = "0.4.0"
 edition = "2021"
 description = """
 Code that helps humans and machines deal with the
