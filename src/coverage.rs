@@ -192,22 +192,24 @@ impl Checker {
         }
 
         if !matching {
-            'cont_types: for (rgx, cont) in vec![
-                (
-                    self.generated_content_rgxs.as_ref(),
-                    &mut self.coverage.generated_content,
-                ),
-                (
-                    self.arbitrary_content_rgxs.as_ref(),
-                    &mut self.coverage.arbitrary_content,
-                ),
-            ] {
-                for gen_cont_rgx in rgx.expect("Was initialized further up in this function") {
-                    if gen_cont_rgx.is_match(&dir_or_file_str_lossy) {
-                        matching = true;
-                        cont.push(Rc::clone(dir_or_file));
-                        break 'cont_types;
-                    }
+            let rgxs = self.arbitrary_content_rgxs.as_ref();
+            let cont = &mut self.coverage.arbitrary_content;
+            for rgx in rgxs.expect("Was initialized further up in this function") {
+                if rgx.is_match(&dir_or_file_str_lossy) {
+                    matching = true;
+                    cont.push(Rc::clone(dir_or_file));
+                    break;
+                }
+            }
+        }
+
+        {
+            let rgxs = self.generated_content_rgxs.as_ref();
+            let cont = &mut self.coverage.generated_content;
+            for rgx in rgxs.expect("Was initialized further up in this function") {
+                if rgx.is_match(&dir_or_file_str_lossy) {
+                    cont.push(Rc::clone(dir_or_file));
+                    break;
                 }
             }
         }
