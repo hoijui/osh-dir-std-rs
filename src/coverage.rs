@@ -4,12 +4,17 @@
 
 use regex::Regex;
 use serde::Serialize;
-use std::{collections::HashMap, path::PathBuf, rc::Rc};
+use std::{
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+    rc::Rc,
+};
 use tracing::trace;
 
 use crate::{
     best_fit,
     data::STDS,
+    format::RegexEq,
     stds::Standards,
     tree::{self, RNode},
     BoxResult, Rating, DEFAULT_STD_NAME,
@@ -22,10 +27,12 @@ use super::format::DirStd;
 #[derive(Debug)]
 pub struct Checker {
     /// the coverage in creation
-    pub coverage: Coverage,
+    coverage: Coverage,
     ignored_paths: Regex,
     arbitrary_content_rgxs: Option<Vec<Regex>>,
     generated_content_rgxs: Option<Vec<Regex>>,
+    module_rgxs: Option<Vec<Regex>>,
+    modules: HashMap<PathBuf, Checker>,
     records_tree: Option<(RNode<'static>, Vec<RNode<'static>>)>,
 }
 
@@ -37,7 +44,8 @@ pub struct Coverage {
     pub std: &'static DirStd,
     /// Number of viable paths in the input-dir.
     /// These are all paths in the input dir,
-    /// minus the ignored ones.
+    /// minus the ignored ones,
+    /// and excluding paths covered by modules.
     pub num_paths: usize,
     /// The records in the checked standard
     /// that matched one or more paths in the input,
@@ -65,6 +73,13 @@ pub struct Coverage {
     /// The viable paths in the input dir that did not match any record
     /// of the checked standard.
     pub out: Vec<Rc<PathBuf>>,
+    /// The coverages for the modules directly included in the root listing;
+    /// sub-modules (modules of modules) are contained in the sub coverage.
+    /// The path used as key here, is the path of the moduel directory -
+    /// modules always are assumed to be rooted in one directory each.
+    /// We also assume, that the name of that directory
+    /// is the (machine-readable version of) the modules name.
+    pub modules: HashMap<PathBuf, Coverage>,
 }
 
 fn create_arbitrary_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
@@ -119,6 +134,35 @@ fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
     rgxs
 }
 
+fn create_module_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
+    let mut rgxs = HashSet::new();
+    log::warn!("module rgxs:");
+    for rec_node in tree_recs.iter() {
+        let rec_brw = rec_node.borrow();
+        if let Some(rec) = rec_brw.value {
+            if rec.module {
+                if let Some(path_regex) = &rec_brw.path_regex {
+                    let rgx = if rec.directory {
+                        let mut rgx_str = path_regex.0.to_string();
+                        // This removes the final "$"
+                        rgx_str.remove(rgx_str.len() - 1);
+                        rgx_str.insert(rgx_str.len(), '/');
+                        log::warn!("{rgx_str}");
+                        Regex::new(&rgx_str).unwrap_or_else(|_| {
+                            panic!("Bad (assembled) module dir regex '{rgx_str}'")
+                        })
+                    } else {
+                        path_regex.0.clone()
+                    };
+                    rgxs.insert(RegexEq(rgx));
+                }
+            }
+        }
+    }
+    log::warn!("");
+    rgxs.into_iter().map(|rgxeq| rgxeq.0).collect()
+}
+
 impl Checker {
     /// Given a set of the relative paths of all dirs and files in a project,
     /// figures out which of them are covered by what parts
@@ -129,6 +173,8 @@ impl Checker {
             ignored_paths: ignored_paths.clone(),
             arbitrary_content_rgxs: None,
             generated_content_rgxs: None,
+            module_rgxs: None,
+            modules: HashMap::new(),
             records_tree: None,
         }
     }
@@ -144,14 +190,51 @@ impl Checker {
 
     pub fn cover(&mut self, dir_or_file: &Rc<PathBuf>) {
         let dir_or_file_str_lossy = dir_or_file.as_ref().to_string_lossy();
+
+        let (_recs_tree_root, tree_recs) = self
+            .records_tree
+            .get_or_insert_with(|| tree::create(self.coverage.std));
+
+        // lazy-init module_rgxs
+        if self.module_rgxs.is_none() {
+            self.module_rgxs = Some(create_module_rgxs(tree_recs));
+        }
+
+        for mod_rgx in self
+            .module_rgxs
+            .as_ref()
+            .expect("Was initialized further up in this function")
+        {
+            if let Some(mtch) =
+                mod_rgx
+                    .captures_iter(&dir_or_file_str_lossy)
+                    .next()
+                    .map(|capture| {
+                        capture
+                            .get(0)
+                            .expect("If a Module path matches, it should always have a first match")
+                    })
+            {
+                log::warn!("\nmodule related path: {dir_or_file_str_lossy}");
+                let mod_dir = mtch.as_str().into();
+                let sub_dir_or_file = Rc::new(PathBuf::from(
+                    mod_rgx.replace(&dir_or_file_str_lossy, "").as_ref(),
+                ));
+                log::warn!("      mod_dir: {mod_dir:?}");
+                log::warn!("      mod_dir stripped away: {sub_dir_or_file:?}");
+                self.modules
+                    .entry(mod_dir)
+                    .or_insert_with(|| Self::new(self.coverage.std, &self.ignored_paths))
+                    .cover(&sub_dir_or_file);
+                return;
+            }
+        }
+
         if self.ignored_paths.is_match(&dir_or_file_str_lossy) {
             self.coverage.ignored.push(Rc::clone(dir_or_file));
             return;
         }
         self.coverage.num_paths += 1;
-        let (_recs_tree_root, tree_recs) = self
-            .records_tree
-            .get_or_insert_with(|| tree::create(self.coverage.std));
 
         // lazy-init arbitrary_content_rgxs
         if self.arbitrary_content_rgxs.is_none() {
@@ -210,6 +293,16 @@ impl Checker {
             self.coverage.out.push(Rc::clone(dir_or_file));
         }
     }
+
+    pub fn coverage(mut self) -> Coverage {
+        self.coverage.modules.clear();
+        for (mod_path, mod_checker) in self.modules {
+            self.coverage
+                .modules
+                .insert(mod_path, mod_checker.coverage());
+        }
+        self.coverage
+    }
 }
 
 impl Coverage {
@@ -223,6 +316,7 @@ impl Coverage {
             arbitrary_content: Vec::new(),
             generated_content: Vec::new(),
             out: Vec::new(),
+            modules: HashMap::new(),
         }
     }
 
@@ -266,11 +360,27 @@ impl Coverage {
         trace!("out: {:#?}", self.out);
 
         let total_rating = pos_rating + neg_rating;
-        if total_rating > 0.0 {
+        // the main rating is the whole rating, excluding the modules
+        let main_rating = if total_rating > 0.0 {
             pos_rating / total_rating
         } else {
             pos_rating
+        };
+
+        let mut rating_parts = vec![(self.num_paths, main_rating)];
+        for mod_coverage in self.modules.values() {
+            rating_parts.push((mod_coverage.num_paths, mod_coverage.rate()));
         }
+        let num_combined_paths = rating_parts
+            .iter()
+            .fold(0, |sum, (num_paths, _part_rating)| sum + num_paths)
+            as f32;
+        let combined_rating = rating_parts
+            .iter()
+            .fold(0.0, |sum, (num_paths, part_rating)| {
+                sum + (part_rating * (*num_paths as f32 / num_combined_paths))
+            });
+        combined_rating
     }
 
     /// Returns a list of the identified module(/parts) directories.
@@ -312,7 +422,7 @@ where
     }
     let mut coverages = vec![];
     for checker in checkers {
-        coverages.push(checker.coverage);
+        coverages.push(checker.coverage());
     }
     Ok(coverages)
 }
@@ -338,7 +448,7 @@ where
         let dir_or_file = dir_or_file_res?;
         checker.cover(&dir_or_file);
     }
-    Ok(checker.coverage)
+    Ok(checker.coverage())
 }
 
 /// Given a set of the relative paths of all dirs and files in a project,
