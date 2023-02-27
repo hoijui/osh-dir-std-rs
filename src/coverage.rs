@@ -125,15 +125,7 @@ impl Checker {
     /// of a given dir standard.
     pub fn new(std: &'static super::format::DirStd, ignored_paths: &Regex) -> Self {
         Self {
-            coverage: Coverage {
-                std,
-                num_paths: 0,
-                r#in: HashMap::new(),
-                ignored: Vec::new(),
-                arbitrary_content: Vec::new(),
-                generated_content: Vec::new(),
-                out: Vec::new(),
-            },
+            coverage: Coverage::new(std),
             ignored_paths: ignored_paths.clone(),
             arbitrary_content_rgxs: None,
             generated_content_rgxs: None,
@@ -221,6 +213,19 @@ impl Checker {
 }
 
 impl Coverage {
+    #[must_use]
+    pub fn new(std: &'static super::format::DirStd) -> Self {
+        Self {
+            std,
+            num_paths: 0,
+            r#in: HashMap::new(),
+            ignored: Vec::new(),
+            arbitrary_content: Vec::new(),
+            generated_content: Vec::new(),
+            out: Vec::new(),
+        }
+    }
+
     /// Calculates how much the input listing adheres to the input dir standard.
     /// 0.0 means not at all, 1.0 means totally/fully.
     #[must_use]
