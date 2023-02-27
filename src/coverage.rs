@@ -68,7 +68,7 @@ pub struct Coverage {
 }
 
 fn create_arbitrary_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
-    let mut cont_rgxs = vec![];
+    let mut rgxs = vec![];
     for rec_node in tree_recs.iter() {
         let rec_brw = rec_node.borrow();
         if let Some(rec) = rec_brw.value {
@@ -85,17 +85,17 @@ fn create_arbitrary_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
                         } else {
                             path_regex.0.clone()
                         };
-                        cont_rgxs.push(rgx);
+                        rgxs.push(rgx);
                     }
                 }
             }
         }
     }
-    cont_rgxs
+    rgxs
 }
 
 fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
-    let mut cont_rgxs = vec![];
+    let mut rgxs = vec![];
     for rec_node in tree_recs.iter() {
         let rec_brw = rec_node.borrow();
         if let Some(rec) = rec_brw.value {
@@ -111,12 +111,12 @@ fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
                     } else {
                         path_regex.0.clone()
                     };
-                    cont_rgxs.push(rgx);
+                    rgxs.push(rgx);
                 }
             }
         }
     }
-    cont_rgxs
+    rgxs
 }
 
 impl Checker {
