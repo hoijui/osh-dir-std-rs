@@ -56,6 +56,7 @@ fn transcribe_dir_stds() -> BoxResult<()> {
         &mut dir_stds_out,
         r##"
 use std::collections::HashMap;
+use std::collections::HashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use crate::format;

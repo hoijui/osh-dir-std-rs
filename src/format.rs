@@ -4,6 +4,7 @@
 
 use std::{
     borrow::Cow,
+    collections::HashSet,
     fs,
     path::{Path, PathBuf},
 };
@@ -101,6 +102,7 @@ pub struct Rec<'a> {
     pub module: bool,
     pub directory: bool,
     pub arbitrary_content: Option<bool>,
+    pub tags: HashSet<&'a str>,
     pub indicativeness: f32,
     pub variations: Option<Vec<&'a str>>,
     pub regex: Option<RegexEq>,
@@ -122,6 +124,24 @@ impl core::hash::Hash for Rec<'_> {
     }
 }
 
+fn join_set(col: &HashSet<&str>, token: char) -> String {
+    // Estimates the final strings length
+    //let len = col.len() * 6;
+    // Calculates the final strings length
+    let len = col.iter().fold(0, |sum, entry| sum + entry.len() + 1);
+
+    let mut res = col
+        .iter()
+        .fold(String::with_capacity(len), |mut acc, entry| {
+            acc.push_str(entry);
+            acc.push(token);
+            acc
+        });
+    res.pop();
+
+    res
+}
+
 impl Rec<'_> {
     #[must_use]
     #[allow(dead_code)]
@@ -133,6 +153,7 @@ impl Rec<'_> {
             generated: self.generated,
             module: self.module,
             arbitrary_content: self.arbitrary_content.into(),
+            tags: join_set(&self.tags, '|'),
             indicativeness: self.indicativeness,
             variations: self.variations.as_ref().map(|vars| vars.join("|")),
             regex: self.regex.as_ref().map(|reg| reg.0.clone()),
@@ -193,6 +214,7 @@ pub struct Record {
     pub generated: bool,
     pub module: bool,
     pub arbitrary_content: OptBool,
+    pub tags: String,
     pub indicativeness: f32,
     pub variations: Option<String>,
     /// Regex for the last path part
@@ -220,6 +242,7 @@ impl Codify for Record {
             module: {},
             directory: {},
             arbitrary_content: {},
+            tags: {},
             #[allow(clippy::unreadable_literal)]
             indicativeness: {:#?}_f32,
             variations: {},
@@ -234,6 +257,7 @@ impl Codify for Record {
             self.module,
             self.path.ends_with('/'),
             self.arbitrary_content.init_code(),
+            self.tags.split('|').collect::<HashSet<_>>().init_code(),
             self.indicativeness,
             self.variations
                 .as_ref()
