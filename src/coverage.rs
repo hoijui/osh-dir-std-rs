@@ -283,6 +283,7 @@ impl Checker {
             let cont = &mut self.coverage.generated_content;
             for rgx in rgxs.expect("Was initialized further up in this function") {
                 if rgx.is_match(&dir_or_file_str_lossy) {
+                    matching = true;
                     cont.push(Rc::clone(dir_or_file));
                     break;
                 }
