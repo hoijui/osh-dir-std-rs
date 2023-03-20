@@ -46,6 +46,7 @@ pub use evaluation::rate_listing;
 pub use evaluation::rate_listing_by_stds;
 pub use evaluation::rate_listing_with;
 pub use evaluation::Rating;
+pub use evaluation::RatingCont;
 
 use git_version::git_version;
 

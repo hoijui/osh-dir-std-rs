@@ -48,7 +48,7 @@ use osh_dir_std::{
     format::{Rec, Record},
     rate_listing_by_stds,
     stds::Standards,
-    BoxResult, Coverage,
+    BoxResult, Coverage, RatingCont,
 };
 use regex::Regex;
 use serde::Serialize;
@@ -241,7 +241,7 @@ fn main() -> BoxResult<()> {
     let ignored_paths = ignored_paths(args);
     let pretty = true; // TODO Make this a CLI arg
 
-    if let Some((sub_com_name, _sub_com_args)) = args.subcommand() {
+    if let Some((sub_com_name, sub_com_args)) = args.subcommand() {
         let mut listing_strm = input_stream(args)?;
         let dirs_and_files = dirs_and_files(&mut listing_strm);
 
@@ -252,7 +252,14 @@ fn main() -> BoxResult<()> {
         match sub_com_name {
             cli::SC_N_RATE => {
                 log::info!("Rating listing according to standard(s) ...");
-                let rating = rate_listing_by_stds(dirs_and_files, &ignored_paths, &stds)?;
+                let mut rating = rate_listing_by_stds(dirs_and_files, &ignored_paths, &stds)?;
+                let include_coverage = sub_com_args.get_flag(cli::A_L_INCLUDE_COVERAGE);
+                if !include_coverage {
+                    rating = rating
+                        .into_iter()
+                        .map(RatingCont::remove_coverage)
+                        .collect();
+                }
 
                 log::info!("Converting results to JSON ...");
                 let json_rating = if pretty {

@@ -14,6 +14,7 @@ use tracing::trace;
 use crate::{
     best_fit,
     data::STDS,
+    evaluation::RatingCont,
     format::RegexEq,
     stds::Standards,
     tree::{self, RNode},
@@ -481,12 +482,17 @@ where
         Standards::All => cover_listing(dirs_and_files, ignored_paths)?,
         Standards::BestFit => {
             let coverages = cover_listing(dirs_and_files, ignored_paths)?;
-            let ratings = coverages.iter().map(Rating::rate_coverage).collect();
-            let max_rating = best_fit(&ratings)?;
-            coverages
+            let ratings = coverages
                 .into_iter()
-                .filter(|cvrg| cvrg.std.name == max_rating.name)
-                .collect()
+                .map(|coverage| RatingCont {
+                    rating: Rating::rate_coverage(&coverage),
+                    coverage: Some(coverage),
+                })
+                .collect();
+            let max_rating = best_fit(ratings)?;
+            vec![max_rating
+                .coverage
+                .expect("At this point, all coverages have to be present")]
         }
         Standards::Specific(std_name) => {
             let std = STDS.get(std_name).expect("Clap already checked the name!");

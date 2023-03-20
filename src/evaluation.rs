@@ -18,6 +18,22 @@ pub struct Rating {
     pub factor: f32,
 }
 
+#[derive(Serialize)]
+pub struct RatingCont {
+    pub rating: Rating,
+    pub coverage: Option<Coverage>,
+}
+
+impl RatingCont {
+    #[must_use]
+    pub fn remove_coverage(self) -> Self {
+        Self {
+            rating: self.rating,
+            coverage: None,
+        }
+    }
+}
+
 impl Rating {
     /// Calculates how much the input listing adheres to the input dir standard.
     /// 0.0 means not at all, 1.0 means totally/fully.
@@ -68,16 +84,19 @@ impl Rating {
 ///
 /// If any of the input listing entires is an error,
 /// usually caused by an I/O issue.
-pub fn rate_listing<T, E>(dirs_and_files: T, ignored_paths: &Regex) -> Result<Vec<Rating>, E>
+pub fn rate_listing<T, E>(dirs_and_files: T, ignored_paths: &Regex) -> Result<Vec<RatingCont>, E>
 where
     T: Iterator<Item = Result<Rc<PathBuf>, E>>,
 {
     let coverages = cover_listing(dirs_and_files, ignored_paths)?;
     let mut ratings = vec![];
     for coverage in coverages {
-        ratings.push(Rating {
-            name: coverage.std.name.to_owned(),
-            factor: coverage.rate(),
+        ratings.push(RatingCont {
+            rating: Rating {
+                name: coverage.std.name.to_owned(),
+                factor: coverage.rate(),
+            },
+            coverage: Some(coverage),
         });
     }
     Ok(ratings)
@@ -100,7 +119,7 @@ pub fn rate_listing_with<T, E>(
     dirs_and_files: T,
     ignored_paths: &Regex,
     std_name: &str,
-) -> Result<Rating, E>
+) -> Result<RatingCont, E>
 where
     T: Iterator<Item = Result<Rc<PathBuf>, E>>,
 {
@@ -108,9 +127,12 @@ where
         .get(std_name)
         .unwrap_or_else(|| panic!("Unknown directory standard: '{std_name}'"));
     let coverage = cover_listing_with(dirs_and_files, ignored_paths, std)?;
-    Ok(Rating {
-        name: std_name.to_string(),
-        factor: coverage.rate(),
+    Ok(RatingCont {
+        rating: Rating {
+            name: std_name.to_string(),
+            factor: coverage.rate(),
+        },
+        coverage: Some(coverage),
     })
 }
 
@@ -120,15 +142,15 @@ where
 /// # Errors
 ///
 /// If none of the supplied ratings has a factor higher then 0.0.
-pub fn best_fit(ratings: &Vec<Rating>) -> BoxResult<&'_ Rating> {
-    let mut max_rating: Option<&Rating> = None;
-    for rating in ratings {
-        if let Some(max_rating_val) = max_rating {
-            if rating.factor > max_rating_val.factor {
-                max_rating = Some(rating);
+pub fn best_fit(ratings: Vec<RatingCont>) -> BoxResult<RatingCont> {
+    let mut max_rating: Option<RatingCont> = None;
+    for rating_cont in ratings {
+        if let Some(ref max_rating_val) = max_rating {
+            if rating_cont.rating.factor > max_rating_val.rating.factor {
+                max_rating = Some(rating_cont);
             }
         } else {
-            max_rating = Some(rating);
+            max_rating = Some(rating_cont);
         }
     }
     max_rating
@@ -151,7 +173,7 @@ pub fn rate_listing_by_stds<T>(
     dirs_and_files: T,
     ignored_paths: &Regex,
     stds: &Standards,
-) -> BoxResult<Vec<Rating>>
+) -> BoxResult<Vec<RatingCont>>
 where
     T: Iterator<Item = BoxResult<Rc<PathBuf>>>,
 {
@@ -163,9 +185,10 @@ where
         )?],
         Standards::All => rate_listing(dirs_and_files, ignored_paths)?,
         Standards::BestFit => {
-            let ratings = rate_listing(dirs_and_files, ignored_paths).map(Into::into)?;
-            let max_rating = best_fit(&ratings)?;
-            vec![(*max_rating).clone()]
+            let ratings: Vec<RatingCont> =
+                rate_listing(dirs_and_files, ignored_paths).map(Into::into)?;
+            let max_rating: RatingCont = best_fit(ratings)?;
+            vec![max_rating]
         }
         Standards::Specific(std_name) => {
             vec![rate_listing_with(dirs_and_files, ignored_paths, std_name)?]

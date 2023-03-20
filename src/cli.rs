@@ -37,6 +37,9 @@ pub const A_S_ALL: char = 'a';
 pub const A_L_IGNORE_PATHS: &str = "ignore-paths-regex";
 pub const A_S_IGNORE_PATHS: char = 'i';
 
+pub const A_L_INCLUDE_COVERAGE: &str = "include-coverage";
+pub const A_S_INCLUDE_COVERAGE: char = 'c';
+
 fn arg_output() -> Arg {
     Arg::new(A_P_OUTPUT)
         .help("The output file")
@@ -96,9 +99,18 @@ or '-' or no argument, meaning the same format is expected on stdin.",
         .global(true)
 }
 
+fn arg_include_coverage() -> Arg {
+    Arg::new(A_L_INCLUDE_COVERAGE)
+        .help("Includes the coverage")
+        .short(A_S_INCLUDE_COVERAGE)
+        .long(A_L_INCLUDE_COVERAGE)
+        .action(ArgAction::SetTrue)
+}
+
 fn subcom_rate() -> Command {
     Command::new(SC_N_RATE)
         .about("Rates a project repo directory with all known OSH dir standards, indicating for each standard how well it fits")
+        .arg(arg_include_coverage())
         .alias("r")
 }
 
