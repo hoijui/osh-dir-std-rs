@@ -30,17 +30,17 @@ fn read_default_dir_std_name() -> BoxResult<String> {
 
 fn read_dir_stds() -> BoxResult<HashMap<String, format::DirStandard>> {
     let mut dir_stds = HashMap::new();
-    for f in fs::read_dir(DIR_STD_DIRS_ROOT)? {
-        let f = f?;
+    for fle_res in fs::read_dir(DIR_STD_DIRS_ROOT)? {
+        let fle = fle_res?;
 
-        if !f.file_type()?.is_dir() {
+        if !fle.file_type()?.is_dir() {
             continue;
         }
 
-        let def_file = fs::canonicalize(f.path().join("definition.csv"))?;
+        let def_file = fs::canonicalize(fle.path().join("definition.csv"))?;
         println!("cargo:rerun-if-changed={}", def_file.display());
         let dir_standard = format::DirStandard::from_csv_file(&def_file)?;
-        dir_stds.insert(f.file_name().to_string_lossy().to_string(), dir_standard);
+        dir_stds.insert(fle.file_name().to_string_lossy().to_string(), dir_standard);
     }
 
     Ok(dir_stds)
