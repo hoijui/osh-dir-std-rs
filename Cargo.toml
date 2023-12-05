@@ -13,7 +13,7 @@ Code that helps humans and machines deal with the
 """
 repository = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]
-categories = ["standard", "specification", "osh"]
+categories = ["command-line-utilities", "filesystem", "text-processing"]
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 
