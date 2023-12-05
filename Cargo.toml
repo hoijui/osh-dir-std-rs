@@ -23,10 +23,10 @@ edition = "2021"
 rust_2021_compatibility = "warn"
 
 [lints.clippy]
-all = "deny"
-pedantic = "warn"
-nursery = "warn"
-cargo = "warn"
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
 wildcard_enum_match_arm = "warn"
 string_slice = "warn"
 indexing_slicing = "warn"
@@ -38,17 +38,17 @@ else_if_without_else = "warn"
 use_debug = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
-enum_variant_names = "allow"
+enum_variant_names = { level = "allow", priority = 1 }
 # NOTE allowed because:
 #      If the same regex is going to be applied to multiple inputs,
 #      the precomputations done by Regex construction
 #      can give significantly better performance
 #      than any of the `str`-based methods.
-trivial_regex = "allow"
-default_trait_access = "allow"
-struct_excessive_bools = "allow"
-fn_params_excessive_bools = "allow"
-cast_precision_loss = "allow"
+trivial_regex = { level = "allow", priority = 1 }
+default_trait_access = { level = "allow", priority = 1 }
+struct_excessive_bools = { level = "allow", priority = 1 }
+fn_params_excessive_bools = { level = "allow", priority = 1 }
+cast_precision_loss = { level = "allow", priority = 1 }
 
 [dependencies]
 clap = { version = "4.0", features = ["std", "cargo", "help"], default-features = false }
