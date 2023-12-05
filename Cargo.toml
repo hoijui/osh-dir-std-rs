@@ -13,8 +13,10 @@ Helps humans and machines deal with the
 <https://github.com/hoijui/osh-dir-std>
 """
 repository = "https://github.com/hoijui/osh-dir-std-rs"
+homepage = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]
 categories = ["command-line-utilities", "filesystem", "text-processing"]
+readme = "README.md"
 edition = "2021"
 
 [lints.rust]
