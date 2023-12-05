@@ -74,6 +74,7 @@ use crate::format;
 
     let mut std_names_sorted: Vec<&String> = stds.keys().collect();
     std_names_sorted.sort();
+    #[allow(clippy::use_debug)]
     writeln!(
         &mut dir_stds_out,
         r##"pub const STD_NAMES: [&str; {}] = {:?};
