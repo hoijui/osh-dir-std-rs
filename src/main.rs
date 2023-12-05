@@ -48,9 +48,9 @@ fn input_stream(args: &ArgMatches) -> io::Result<Box<dyn BufRead>> {
     let input_listing = args.get_one::<PathBuf>(A_L_INPUT_LISTING);
     log::info!(
         "Reading input listing from {}.",
-        cli_utils::create_input_reader_description(&input_listing)
+        cli_utils::create_input_reader_description(input_listing)
     );
-    cli_utils::create_input_reader(&input_listing)
+    cli_utils::create_input_reader(input_listing)
 }
 
 fn dirs_and_files(
@@ -87,9 +87,9 @@ fn out_stream(args: &ArgMatches) -> io::Result<Box<dyn Write>> {
     let out_stream_id = args.get_one::<PathBuf>(cli::A_P_OUTPUT);
     log::info!(
         "Writing output to {}",
-        cli_utils::create_output_writer_description(&out_stream_id)
+        cli_utils::create_output_writer_description(out_stream_id)
     );
-    cli_utils::create_output_writer(&out_stream_id)
+    cli_utils::create_output_writer(out_stream_id)
 }
 
 fn print_version_and_exit(quiet: bool) {

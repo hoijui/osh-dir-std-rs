@@ -52,8 +52,8 @@ cast_precision_loss = "allow"
 
 [dependencies]
 clap = { version = "4.0", features = ["std", "cargo", "help"], default-features = false }
-cli-utils = { version = "0.4", git = "https://github.com/hoijui/cli-utils-rs.git" }
-codify = { version = "0.5", git = "https://github.com/hoijui/codify-rs.git" }
+cli_utils = { version = "0.7", package = "cli_utils_hoijui" }
+codify = { version = "0.6", package = "codify_hoijui" }
 const_format = "0.2"
 csv = "1.1"
 git-version = "0.3"
@@ -68,7 +68,7 @@ tracing = { version = "0.1", default-features = false }
 tracing-subscriber = { version = "0.3" }
 
 [build-dependencies]
-codify = { version = "0.5", git = "https://github.com/hoijui/codify-rs.git" }
+codify = { version = "0.6", package = "codify_hoijui" }
 csv = "1.1"
 log = "0.4"
 regex = "1.7"

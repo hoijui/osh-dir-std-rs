@@ -56,18 +56,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "cli-utils"
-version = "0.4.0"
-source = "git+https://github.com/hoijui/cli-utils-rs.git#77a470ea586506738f6a7ac0953b9eb9d5a29af0"
+name = "cli_utils_hoijui"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c0255a7251ef773482aeab24eba649105a4bd7836ca3f172b31d65014d6ea9e"
 dependencies = [
- "git-version",
  "once_cell",
 ]
 
 [[package]]
-name = "codify"
-version = "0.5.0"
-source = "git+https://github.com/hoijui/codify-rs.git#c63b23b48377088228a4d6551197209837806d19"
+name = "codify_hoijui"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb8c0d7691d9e053b7dab5d21936e9c6d21b8b4f806ef00fde4cae0372b278af"
 
 [[package]]
 name = "const_format"
@@ -178,9 +179,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.17.0"
+version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f61fba1741ea2b3d6a1e3178721804bb716a68a6aeba1149b5d52e3d464ea66"
+checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
 name = "os_str_bytes"
@@ -189,12 +190,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b7820b9daea5457c9f21c69448905d723fbd21136ccf521748f23fd49e723ee"
 
 [[package]]
-name = "osh-dir-std"
+name = "osh_dir_std"
 version = "0.7.0"
 dependencies = [
  "clap",
- "cli-utils",
- "codify",
+ "cli_utils_hoijui",
+ "codify_hoijui",
  "const_format",
  "csv",
  "git-version",
