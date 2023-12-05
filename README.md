@@ -6,9 +6,9 @@ SPDX-License-Identifier: CC0-1.0
 
 # OSH directory standard - Rust library
 
-[![GitHub license](
-    https://img.shields.io/github/license/hoijui/osh-dir-std-rs.svg?style=flat)](
-    ./LICENSE)
+[![License: AGPL-3.0-or-later](
+    https://img.shields.io/badge/License-AGPL%203.0+-blue.svg)](
+    LICENSE.txt)
 [![REUSE status](
     https://api.reuse.software/badge/github.com/hoijui/osh-dir-std-rs)](
     https://api.reuse.software/info/github.com/hoijui/osh-dir-std-rs)
