@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2022-2023 Robin Vobruba <hoijui.quaero@gmail.com>
+SPDX-FileCopyrightText: 2022 - 2023 Robin Vobruba <hoijui.quaero@gmail.com>
 
 SPDX-License-Identifier: CC0-1.0
 -->
@@ -12,6 +12,21 @@ SPDX-License-Identifier: CC0-1.0
 [![REUSE status](
     https://api.reuse.software/badge/github.com/hoijui/osh-dir-std-rs)](
     https://api.reuse.software/info/github.com/hoijui/osh-dir-std-rs)
+[![Repo](
+    https://img.shields.io/badge/Repo-GitHub-555555&logo=github.svg)](
+    https://github.com/hoijui/osh-dir-std-rs)
+[![Package Releases](
+    https://img.shields.io/crates/v/osh_dir_std.svg)](
+    https://crates.io/crates/osh_dir_std)
+[![Documentation Releases](
+    https://docs.rs/osh_dir_std/badge.svg)](
+    https://docs.rs/osh_dir_std)
+[![Dependency Status](
+    https://deps.rs/repo/github/hoijui/osh-dir-std-rs/status.svg)](
+    https://deps.rs/repo/github/hoijui/osh-dir-std-rs)
+[![Build Status](
+    https://github.com/hoijui/osh-dir-std-rs/workflows/build/badge.svg)](
+    https://github.com/hoijui/osh-dir-std-rs/actions)
 
 [![In cooperation with FabCity Hamburg](
     https://raw.githubusercontent.com/osegermany/tiny-files/master/res/media/img/badge-fchh.svg)](
