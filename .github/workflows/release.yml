@@ -178,10 +178,19 @@ jobs:
         then
           VER_TOOL="$("$BIN" --version --quiet)"
           VER_TAG="${GITHUB_REF#refs/*/}"
+          (
+            echo "VER_TOOL: $VER_TOOL"
+            echo "VER_TAG: $VER_TAG"
+          ) | tee /dev/stderr
           if ! [ "$VER_TOOL" == "$VER_TAG" ]
           then
-            >&2 echo "ERROR: Version reported by tool ('$VER_TOOL') should equal release tag ('$VER_TAG')!"
+            >&2 echo "ERROR: Version reported by tool ('$VER_TOOL') should equal the release tag ('$VER_TAG')!"
             exit 1
+          fi
+          if ! [[ $VER_TOOL =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          then
+            >&2 echo "ERROR: Version reported by tool ('$VER_TOOL') should be a semver compatible string, i.e. of the form: "'^[0-9]+\.[0-9]+\.[0-9]+$'
+            exit 2
           fi
         fi
 
