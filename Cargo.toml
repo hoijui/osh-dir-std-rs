@@ -8,7 +8,7 @@ version = "0.7.0"
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 description = """
-Code that helps humans and machines deal with the
+Helps humans and machines deal with the
 *OSH directory standard*:
 <https://github.com/hoijui/osh-dir-std>
 """
