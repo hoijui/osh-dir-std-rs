@@ -5,7 +5,8 @@
 [package]
 name = "osh-dir-std"
 version = "0.7.0"
-edition = "2021"
+license = "AGPL-3.0-or-later"
+authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 description = """
 Code that helps humans and machines deal with the
 *OSH directory standard*:
@@ -14,8 +15,7 @@ Code that helps humans and machines deal with the
 repository = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]
 categories = ["command-line-utilities", "filesystem", "text-processing"]
-license = "AGPL-3.0-or-later"
-authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+edition = "2021"
 
 [lints.rust]
 rust_2021_compatibility = "warn"
