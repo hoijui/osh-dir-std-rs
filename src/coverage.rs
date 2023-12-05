@@ -85,7 +85,7 @@ pub struct Coverage {
 
 fn create_arbitrary_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
     let mut rgxs = vec![];
-    for rec_node in tree_recs.iter() {
+    for rec_node in tree_recs {
         let rec_brw = rec_node.borrow();
         if let Some(rec) = rec_brw.value {
             if let Some(arbitrary_content) = rec.arbitrary_content {
@@ -112,7 +112,7 @@ fn create_arbitrary_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
 
 fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
     let mut rgxs = vec![];
-    for rec_node in tree_recs.iter() {
+    for rec_node in tree_recs {
         let rec_brw = rec_node.borrow();
         if let Some(rec) = rec_brw.value {
             if rec.generated {
@@ -138,7 +138,7 @@ fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
 fn create_module_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
     let mut rgxs = HashSet::new();
     log::warn!("module rgxs:");
-    for rec_node in tree_recs.iter() {
+    for rec_node in tree_recs {
         let rec_brw = rec_node.borrow();
         if let Some(rec) = rec_brw.value {
             if rec.module {
@@ -261,7 +261,7 @@ impl Checker {
                     self.coverage
                         .r#in
                         .entry(rec)
-                        .or_insert_with(Vec::new)
+                        .or_default()
                         .push(Rc::clone(dir_or_file));
                 }
             }
@@ -464,6 +464,11 @@ where
 ///
 /// If any of the input listing entires is an error,
 /// usually caused by an I/O issue.
+///
+/// # Panics
+///
+/// Expecting `Option`s that logically have to be `Some`,
+/// thus this should never panic in practice.
 pub fn cover_listing_by_stds<T>(
     dirs_and_files: T,
     ignored_paths: &Regex,
@@ -474,9 +479,9 @@ where
 {
     Ok(match stds {
         Standards::Default => {
-            let std = STDS
-                .get(DEFAULT_STD_NAME)
-                .expect("Clap already checked the name!");
+            let std = STDS.get(DEFAULT_STD_NAME).expect(
+                "This name was chosen from the data itsself, so it should alwyas be available",
+            );
             vec![cover_listing_with(dirs_and_files, ignored_paths, std)?]
         }
         Standards::All => cover_listing(dirs_and_files, ignored_paths)?,
