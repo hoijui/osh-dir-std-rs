@@ -16,7 +16,6 @@ keywords = ["norm", "osh", "directory", "structure"]
 categories = ["standard", "specification", "osh"]
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
-publish = false
 
 [lints.rust]
 rust_2021_compatibility = "warn"
