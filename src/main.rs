@@ -21,7 +21,7 @@ use osh_dir_std::{
     format::{Rec, Record},
     rate_listing_by_stds,
     stds::Standards,
-    BoxResult, Coverage, RatingCont,
+    Coverage, RatingCont,
 };
 use regex::Regex;
 use serde::Serialize;
@@ -55,7 +55,7 @@ fn input_stream(args: &ArgMatches) -> io::Result<Box<dyn BufRead>> {
 
 fn dirs_and_files(
     listing_strm: &mut Box<dyn BufRead>,
-) -> impl Iterator<Item = BoxResult<Rc<PathBuf>>> + '_ {
+) -> impl Iterator<Item = io::Result<Rc<PathBuf>>> + '_ {
     let lines_iter = cli_utils::lines_iterator(listing_strm, true);
     let no_comments_lines = lines_iter.filter(|line_res| {
         line_res
@@ -102,18 +102,16 @@ fn print_version_and_exit(quiet: bool) {
     std::process::exit(0);
 }
 
-fn line_to_path_res(res_line: io::Result<String>) -> BoxResult<PathBuf> {
-    res_line.map_or_else(
-        |err| Err(err.into()),
-        |mut line| {
-            // Removes "./" or ".\" (<- Windows) from the beginning of paths
-            if line.starts_with("./") || line.starts_with(".\\") {
-                line.pop();
-                line.pop();
-            }
-            PathBuf::from_str(&line).map_err(std::convert::Into::into)
-        },
-    )
+/// Removes "./" or ".\" (<- Windows) from the beginning of paths.
+fn line_to_path_res(res_line: io::Result<String>) -> io::Result<PathBuf> {
+    res_line.map(|mut line| {
+        if line.starts_with("./") || line.starts_with(".\\") {
+            line.pop();
+            line.pop();
+        }
+        PathBuf::from_str(&line)
+            .expect("As the error type here is core::convert::Infallible, this can never happen")
+    })
 }
 
 struct DirsAdder {
@@ -129,8 +127,8 @@ impl DirsAdder {
 
     pub fn call_mut<P: AsRef<Path>>(
         &mut self,
-        path_res: BoxResult<P>,
-    ) -> Vec<BoxResult<Rc<PathBuf>>> {
+        path_res: io::Result<P>,
+    ) -> Vec<io::Result<Rc<PathBuf>>> {
         #[allow(clippy::option_if_let_else)]
         if let Ok(path) = path_res {
             path.as_ref()
@@ -140,7 +138,7 @@ impl DirsAdder {
                 .map(Rc::new) // We do this to not duplicate memory in cache and the iterator and the coverages
                 .filter(|ancestor| self.visited_dirs_cache.insert(Rc::clone(ancestor)))
                 .map(Ok)
-                .collect::<Vec<BoxResult<_>>>()
+                .collect::<Vec<io::Result<_>>>()
         } else {
             vec![path_res
                 .map(|path| Path::to_path_buf(path.as_ref()))
@@ -156,7 +154,7 @@ impl DirsAdder {
 /// # Errors
 ///
 /// If initializing the registry (logger) failed.
-fn setup_logging() -> BoxResult<Handle<LevelFilter, Registry>> {
+fn setup_logging() -> anyhow::Result<Handle<LevelFilter, Registry>> {
     let level_filter = if cfg!(debug_assertions) {
         LevelFilter::DEBUG
     } else {
@@ -196,7 +194,7 @@ impl From<Coverage> for CovEntry {
     }
 }
 
-fn main() -> BoxResult<()> {
+fn main() -> anyhow::Result<()> {
     let log_reload_handle = setup_logging()?;
 
     let arg_matcher = cli::arg_matcher();

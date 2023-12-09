@@ -51,6 +51,7 @@ fn_params_excessive_bools = { level = "allow", priority = 1 }
 cast_precision_loss = { level = "allow", priority = 1 }
 
 [dependencies]
+anyhow = "1.0"
 clap = { version = "4.0", features = ["std", "cargo", "help"], default-features = false }
 cli_utils = { version = "0.7", package = "cli_utils_hoijui" }
 codify = { version = "0.6", package = "codify_hoijui" }

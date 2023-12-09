@@ -25,9 +25,6 @@ use git_version::git_version;
 
 pub use data::DEFAULT_STD_NAME;
 
-pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
-pub type BoxResult<T> = Result<T, BoxError>;
-
 // This tests rust code in the README with doc-tests.
 // Though, It will not appear in the generated documentaton.
 #[doc = include_str!("../README.md")]

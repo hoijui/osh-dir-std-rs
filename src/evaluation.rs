@@ -2,15 +2,15 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+use std::io;
 use std::{path::PathBuf, rc::Rc};
 
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use tracing::trace;
 
-use crate::{
-    cover_listing, coverage::cover_listing_with, data::STDS, stds::Standards, BoxResult, Coverage,
-};
+use crate::{cover_listing, coverage::cover_listing_with, data::STDS, stds::Standards, Coverage};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Rating {
@@ -136,13 +136,19 @@ where
     })
 }
 
+#[derive(Error, Debug)]
+pub enum BestFitError {
+    #[error("None of the supplied ratings has a factor higher then 0.0")]
+    NoneViable,
+}
+
 /// Given a set of ratings, filters out the one with the higest factor.
 /// If multiple have the same, highest factor, the first one is returned.
 ///
 /// # Errors
 ///
 /// If none of the supplied ratings has a factor higher then 0.0.
-pub fn best_fit(ratings: Vec<RatingCont>) -> BoxResult<RatingCont> {
+pub fn best_fit(ratings: Vec<RatingCont>) -> Result<RatingCont, BestFitError> {
     let mut max_rating: Option<RatingCont> = None;
     for rating_cont in ratings {
         if let Some(ref max_rating_val) = max_rating {
@@ -153,9 +159,17 @@ pub fn best_fit(ratings: Vec<RatingCont>) -> BoxResult<RatingCont> {
             max_rating = Some(rating_cont);
         }
     }
-    max_rating
-        .ok_or("No rating with a factor bigger then 0.0 found")
-        .map_err(Into::into)
+    max_rating.ok_or(BestFitError::NoneViable)
+}
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Failed to evaluate the best fit, because: {0:?}")]
+    BestFitError(#[from] BestFitError),
+
+    /// Represents all other cases of `std::io::Error`.
+    #[error(transparent)]
+    IO(#[from] std::io::Error),
 }
 
 /// Given a set of the relative paths of all dirs and files in a project,
@@ -173,9 +187,9 @@ pub fn rate_listing_by_stds<T>(
     dirs_and_files: T,
     ignored_paths: &Regex,
     stds: &Standards,
-) -> BoxResult<Vec<RatingCont>>
+) -> Result<Vec<RatingCont>, Error>
 where
-    T: Iterator<Item = BoxResult<Rc<PathBuf>>>,
+    T: Iterator<Item = Result<Rc<PathBuf>, io::Error>>,
 {
     Ok(match stds {
         Standards::Default => vec![rate_listing_with(

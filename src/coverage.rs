@@ -6,19 +6,21 @@ use regex::Regex;
 use serde::Serialize;
 use std::{
     collections::{HashMap, HashSet},
+    io,
     path::PathBuf,
     rc::Rc,
 };
+use thiserror::Error;
 use tracing::trace;
 
 use crate::{
     best_fit,
     data::STDS,
-    evaluation::RatingCont,
+    evaluation::{BestFitError, RatingCont},
     format::RegexEq,
     stds::Standards,
     tree::{self, RNode},
-    BoxResult, Rating, DEFAULT_STD_NAME,
+    Rating, DEFAULT_STD_NAME,
 };
 
 use super::format::DirStd;
@@ -453,6 +455,16 @@ where
     Ok(checker.coverage())
 }
 
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Failed to evaluate the best fit, because: {0:?}")]
+    BestFitError(#[from] BestFitError),
+
+    /// Represents all other cases of `std::io::Error`.
+    #[error(transparent)]
+    IO(#[from] std::io::Error),
+}
+
 /// Given a set of the relative paths of all dirs and files in a project,
 /// for each of the known dir standards from
 /// <https://github.com/hoijui/osh-dir-std/>,
@@ -473,9 +485,9 @@ pub fn cover_listing_by_stds<T>(
     dirs_and_files: T,
     ignored_paths: &Regex,
     stds: &Standards,
-) -> BoxResult<Vec<Coverage>>
+) -> Result<Vec<Coverage>, Error>
 where
-    T: Iterator<Item = BoxResult<Rc<PathBuf>>>,
+    T: Iterator<Item = Result<Rc<PathBuf>, io::Error>>,
 {
     Ok(match stds {
         Standards::Default => {

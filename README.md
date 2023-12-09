@@ -118,23 +118,22 @@ adheres 100% to the respective standard.
 ### Library
 
 ``` rust
-use osh_dir_std::{self, BoxResult, format::Rec};
+use anyhow::{anyhow, Error};
+use osh_dir_std::{self, format::Rec};
 
-fn find_rec(std: &str, record_path: &str) -> BoxResult<&'static Rec<'static>> {
+fn find_rec(std: &str, record_path: &str) -> Result<&'static Rec<'static>, Error> {
     for rec in &osh_dir_std::data::STDS.get(std).unwrap().records {
         if rec.path == record_path {
             return Ok(rec);
         }
     }
-    Err(format!(
-        "Failed to find record with path '{}' in the '{}' dir standard",
-        record_path, std
-    )
-    .into())
+    Err(anyhow!(
+        "Failed to find record with path '{record_path}' in the '{std}' dir standard"
+    ))
 }
 
 #[test]
-fn unixish_res_fixed() -> BoxResult<()> {
+fn unixish_res_fixed() -> Result<(), Error> {
     let rec = find_rec("unixish", "res/")?;
     assert!(rec.fixed);
     Ok(())
