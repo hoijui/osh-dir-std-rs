@@ -435,7 +435,7 @@ where
 ///
 /// # Errors
 ///
-/// If any of the input listing entires is an error,
+/// If any of the input listing entries is an error,
 /// usually caused by an I/O issue.
 pub fn cover_listing_with<T, E>(
     dirs_and_files: T,
@@ -462,7 +462,7 @@ where
 ///
 /// # Errors
 ///
-/// If any of the input listing entires is an error,
+/// If any of the input listing entries is an error,
 /// usually caused by an I/O issue.
 ///
 /// # Panics
