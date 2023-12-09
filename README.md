@@ -50,7 +50,7 @@ This consists of two parts:
 **NOTE** \
 This only checks the paths of files and directories
 against a set of presets (aka "standards").
-It does *not* check the content of any files in any way.
+It does _not_ check the content of any files in any way.
 
 ## Example Usage
 
