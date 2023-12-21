@@ -6,5 +6,5 @@
 	path = scripts
 	url = https://github.com/hoijui/rust-project-scripts.git
 [submodule "resources/osh-dir-std"]
-	path = resources/osh-dir-std
+	path = lib/resources/osh-dir-std
 	url = https://github.com/hoijui/osh-dir-std.git

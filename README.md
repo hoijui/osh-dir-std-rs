@@ -118,16 +118,15 @@ adheres 100% to the respective standard.
 ### Library
 
 ``` rust
-use anyhow::{anyhow, Error};
 use osh_dir_std::{self, format::Rec};
 
-fn find_rec(std: &str, record_path: &str) -> Result<&'static Rec<'static>, Error> {
+fn find_rec(std: &str, record_path: &str) -> Result<&'static Rec<'static>, String> {
     for rec in &osh_dir_std::data::STDS.get(std).unwrap().records {
         if rec.path == record_path {
             return Ok(rec);
         }
     }
-    Err(anyhow!(
+    Err(format!(
         "Failed to find record with path '{record_path}' in the '{std}' dir standard"
     ))
 }

@@ -1,0 +1,70 @@
+# SPDX-FileCopyrightText: 2022 - 2023 Robin Vobruba <hoijui.quaero@gmail.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+[package]
+name = "osh_dir_std"
+version = "0.7.2"
+license = "AGPL-3.0-or-later"
+authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+description = """
+Helps humans and machines deal with the
+*OSH directory standard*:
+<https://github.com/hoijui/osh-dir-std>
+"""
+repository = "https://github.com/hoijui/osh-dir-std-rs"
+homepage = "https://github.com/hoijui/osh-dir-std-rs"
+keywords = ["norm", "osh", "directory", "structure"]
+categories = ["filesystem", "text-processing"]
+readme = "../README.md"
+edition = "2021"
+
+[lints.rust]
+rust_2021_compatibility = "warn"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+wildcard_enum_match_arm = "warn"
+string_slice = "warn"
+indexing_slicing = "warn"
+clone_on_ref_ptr = "warn"
+try_err = "warn"
+shadow_reuse = "warn"
+empty_structs_with_brackets = "warn"
+else_if_without_else = "warn"
+use_debug = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+# # NOTE allowed because:
+# #      If the same regex is going to be applied to multiple inputs,
+# #      the precomputations done by Regex construction
+# #      can give significantly better performance
+# #      than any of the `str`-based methods.
+# trivial_regex = { level = "allow", priority = 1 }
+cast_precision_loss = { level = "allow", priority = 1 }
+
+[dependencies]
+codify = { version = "0.6", package = "codify_hoijui" }
+csv = "1.1"
+git-version = "0.3"
+log = "0.4"
+once_cell = "1.16"
+regex = "1.7"
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+serde_regex = "1.1"
+thiserror = "1.0"
+tracing = { version = "0.1", default-features = false }
+tracing-subscriber = { version = "0.3" }
+
+[build-dependencies]
+codify = { version = "0.6", package = "codify_hoijui" }
+csv = "1.1"
+log = "0.4"
+regex = "1.7"
+serde = { version = "1.0", features = ["derive"] }
+serde_regex = "1.1"
+thiserror = "1.0"

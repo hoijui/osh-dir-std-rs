@@ -177,8 +177,22 @@ dependencies = [
  "anyhow",
  "clap",
  "cli_utils_hoijui",
- "codify_hoijui",
  "const_format",
+ "log",
+ "once_cell",
+ "osh_dir_std",
+ "regex",
+ "serde",
+ "serde_json",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "osh_dir_std"
+version = "0.7.2"
+dependencies = [
+ "codify_hoijui",
  "csv",
  "git-version",
  "log",
