@@ -60,7 +60,7 @@ use std::collections::HashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use crate::format;
-    
+
     "##,
     )?;
 
