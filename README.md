@@ -131,6 +131,10 @@ fn find_rec(std: &str, record_path: &str) -> Result<&'static Rec<'static>, Strin
     ))
 }
 
+/// Checks whether the dir std "unixish" contains the record "res/",
+/// and whether that record is a _fixed_ one. See [the definition](
+/// https://github.com/hoijui/osh-dir-std/blob/main/definition_format.csv)
+/// for an explanation of what _fixed_ means.
 #[test]
 fn unixish_res_fixed() -> Result<(), Error> {
     let rec = find_rec("unixish", "res/")?;
