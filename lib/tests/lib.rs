@@ -12,11 +12,10 @@ fn find_rec(std: &str, record_path: &str) -> BoxResult<&'static Rec<'static>> {
             return Ok(rec);
         }
     }
-    Err(format!(
-        "Failed to find record with path '{}' in the '{}' dir standard",
-        record_path, std
+    Err(
+        format!("Failed to find record with path '{record_path}' in the '{std}' dir standard")
+            .into(),
     )
-    .into())
 }
 
 #[test]
@@ -29,6 +28,6 @@ fn unixish_res_normative() -> BoxResult<()> {
 #[test]
 fn prusaish_print_bom() -> BoxResult<()> {
     let rec = find_rec("prusaish", "bom/")?;
-    println!("{:?}", rec);
+    println!("{rec:?}");
     Ok(())
 }
