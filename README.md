@@ -102,7 +102,7 @@ ls -r1 | osh-dir-std rate
 
 sample output:
 
-```shell
+```json
 [
   {
     "name": "unixish",
@@ -117,7 +117,7 @@ adheres 100% to the respective standard.
 
 ### Library
 
-``` rust
+```rust
 use osh_dir_std::{self, format::Rec};
 
 fn find_rec(std: &str, record_path: &str) -> Result<&'static Rec<'static>, String> {
