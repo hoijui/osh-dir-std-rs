@@ -57,6 +57,24 @@ It does _not_ check the content of any files in any way.
 
 ### CLI
 
+#### Installation
+
+##### From Source
+
+###### Fetch & Compile
+
+```shell
+cargo install osh-dir-std
+```
+
+###### Local Sources
+
+```shell
+cargo install --path bin
+```
+
+#### Usage
+
 The tool expects a new-line separated listing of files
 (and optionally directories) of the project,
 either on [`stdin`](
@@ -117,6 +135,17 @@ adheres 100% to the respective standard.
 `unixish` is the name of the default directory standard.
 
 ### Library
+
+#### Setup
+
+_Cargo.toml_:
+
+```toml
+[dependencies]
+osh_dir_std = "0.7.2"
+```
+
+#### Code
 
 ```rust
 use osh_dir_std::{self, format::Rec};
