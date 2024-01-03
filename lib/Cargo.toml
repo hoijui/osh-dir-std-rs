@@ -19,32 +19,17 @@ categories = ["filesystem", "text-processing"]
 readme = "../README.md"
 edition = "2021"
 
-[lints.rust]
-rust_2021_compatibility = "warn"
+[lints]
+workspace = true
 
-[lints.clippy]
-all = { level = "deny", priority = -1 }
-pedantic = { level = "deny", priority = -1 }
-nursery = { level = "warn", priority = -1 }
-cargo = { level = "warn", priority = -1 }
-wildcard_enum_match_arm = "warn"
-string_slice = "warn"
-indexing_slicing = "warn"
-clone_on_ref_ptr = "warn"
-try_err = "warn"
-shadow_reuse = "warn"
-empty_structs_with_brackets = "warn"
-else_if_without_else = "warn"
-use_debug = "warn"
-print_stdout = "warn"
-print_stderr = "warn"
-# # NOTE allowed because:
-# #      If the same regex is going to be applied to multiple inputs,
-# #      the precomputations done by Regex construction
-# #      can give significantly better performance
-# #      than any of the `str`-based methods.
-# trivial_regex = { level = "allow", priority = 1 }
-cast_precision_loss = { level = "allow", priority = 1 }
+# [lints.clippy]
+# # # NOTE allowed because:
+# # #      If the same regex is going to be applied to multiple inputs,
+# # #      the precomputations done by Regex construction
+# # #      can give significantly better performance
+# # #      than any of the `str`-based methods.
+# # trivial_regex = { level = "allow", priority = 1 }
+# cast_precision_loss = { level = "allow", priority = 1 }
 
 [dependencies]
 codify = { version = "0.6", package = "codify_hoijui" }
