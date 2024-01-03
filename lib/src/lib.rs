@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+#![allow(clippy::cast_precision_loss)]
+
 pub mod constants;
 mod coverage;
 pub mod data;
