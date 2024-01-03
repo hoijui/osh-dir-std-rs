@@ -48,7 +48,6 @@ tracing-subscriber = { version = "0.3" }
 [build-dependencies]
 codify = { version = "0.6", package = "codify_hoijui" }
 csv = "1.1"
-log = "0.4"
 regex = "1.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_regex = "1.1"
