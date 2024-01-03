@@ -9,9 +9,13 @@ on:
     branches: [ master, develop ]
     paths:
       - 'src/**'
+      - '**/src/**'
       - 'tests/**'
+      - '**/tests/**'
       - 'Cargo.toml'
+      - '**/Cargo.toml'
       - 'Cargo.lock'
+      - '**/Cargo.lock'
       - 'scripts/build'
       - '.github/workflows/build.yml'
   release:
