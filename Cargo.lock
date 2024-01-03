@@ -172,7 +172,7 @@ checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
 name = "osh-dir-std"
-version = "0.7.2"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -190,7 +190,7 @@ dependencies = [
 
 [[package]]
 name = "osh_dir_std"
-version = "0.7.2"
+version = "0.8.0"
 dependencies = [
  "codify_hoijui",
  "csv",

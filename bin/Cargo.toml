@@ -4,7 +4,7 @@
 
 [package]
 name = "osh-dir-std"
-version = "0.7.2"
+version = "0.8.0"
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 description = """
@@ -24,7 +24,7 @@ workspace = true
 
 [dependencies]
 anyhow = "1.0"
-osh_dir_std = { version = "0.7.2", path = "../lib" }
+osh_dir_std = { version = "0.8.0", path = "../lib" }
 clap = { version = "4.0", features = ["std", "cargo", "help"], default-features = false }
 cli_utils = { version = "0.7", package = "cli_utils_hoijui" }
 const_format = "0.2"
