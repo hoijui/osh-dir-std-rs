@@ -92,9 +92,8 @@ fn out_stream(args: &ArgMatches) -> io::Result<Box<dyn Write>> {
     cli_utils::create_output_writer(out_stream_id)
 }
 
+#[allow(clippy::print_stdout)]
 fn print_version_and_exit(quiet: bool) {
-    #![allow(clippy::print_stdout)]
-
     if !quiet {
         print!("{} ", clap::crate_name!());
     }
