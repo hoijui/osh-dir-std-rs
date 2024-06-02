@@ -263,7 +263,7 @@ impl Codify for Record {
                 .as_ref()
                 .map(|s| s.split('|').collect::<Vec<_>>())
                 .init_code(),
-            self.regex.as_ref().cloned().map(RegexEq).init_code(),
+            self.regex.clone().map(RegexEq).init_code(),
             self.description,
             self.sample_content,
         ))
