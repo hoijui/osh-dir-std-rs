@@ -117,13 +117,13 @@ pub fn create<'a>(std_raw: &'a format::DirStd) -> (RNode, Vec<RNode>) {
         let mut leaf_mut = leaf.as_ref().borrow_mut();
         leaf_mut.value = Some(rec);
         let mut bnd_rgx_str = rec.get_regex_str();
-        let mut anc = leaf_mut.parent.as_ref().map(Rc::clone);
+        let mut anc = leaf_mut.parent.clone();
         while let Some(ref mut parent) = anc {
             if let Some(parent_val) = parent.borrow().value {
                 bnd_rgx_str.insert(0, '/');
                 bnd_rgx_str.insert_str(0, &parent_val.get_regex_str());
             }
-            let new_anc = parent.borrow().parent.as_ref().map(Rc::clone);
+            let new_anc = parent.borrow().parent.clone();
             if let Some(anc_c) = anc {
                 drop(anc_c);
             }
