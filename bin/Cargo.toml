@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Unlicense
 
 [package]
-name = "osh-dir-std"
+name = "osh-dir-std-cli"
 version = "0.8.1"
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
@@ -19,12 +19,16 @@ categories = ["command-line-utilities", "filesystem", "text-processing"]
 readme = "../README.md"
 edition = "2021"
 
+[[bin]]
+path = "src/main.rs"
+name = "osh-dir-std"
+
 [lints]
 workspace = true
 
 [dependencies]
 anyhow = "1.0"
-osh_dir_std = { version = "0.8", path = "../lib" }
+osh-dir-std = { version = "0.8", path = "../lib" }
 clap = { version = "4.5", features = ["std", "cargo", "help"], default-features = false }
 cli_utils = { version = "0.7", package = "cli_utils_hoijui" }
 const_format = "0.2"

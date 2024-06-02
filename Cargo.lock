@@ -174,24 +174,6 @@ checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 name = "osh-dir-std"
 version = "0.8.1"
 dependencies = [
- "anyhow",
- "clap",
- "cli_utils_hoijui",
- "const_format",
- "log",
- "once_cell",
- "osh_dir_std",
- "regex",
- "serde",
- "serde_json",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "osh_dir_std"
-version = "0.8.1"
-dependencies = [
  "codify_hoijui",
  "csv",
  "git-version",
@@ -202,6 +184,24 @@ dependencies = [
  "serde_regex",
  "thiserror",
  "tracing",
+]
+
+[[package]]
+name = "osh-dir-std-cli"
+version = "0.8.1"
+dependencies = [
+ "anyhow",
+ "clap",
+ "cli_utils_hoijui",
+ "const_format",
+ "log",
+ "once_cell",
+ "osh-dir-std",
+ "regex",
+ "serde",
+ "serde_json",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
