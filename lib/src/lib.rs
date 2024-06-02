@@ -33,4 +33,4 @@ pub use data::DEFAULT_STD_NAME;
 #[cfg(doctest)]
 pub struct ReadmeDoctests;
 
-pub const VERSION: &str = git_version!();
+pub const VERSION: &str = git_version!(cargo_prefix = "", fallback = "unknown");
