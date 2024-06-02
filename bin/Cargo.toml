@@ -4,7 +4,7 @@
 
 [package]
 name = "osh-dir-std"
-version = "0.8.0"
+version = "0.8.1"
 license = "AGPL-3.0-or-later"
 authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 description = """
