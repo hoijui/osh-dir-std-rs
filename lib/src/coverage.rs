@@ -5,7 +5,8 @@
 use regex::Regex;
 use serde::Serialize;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
+    hash::{DefaultHasher, Hash, Hasher},
     io,
     path::PathBuf,
     rc::Rc,
@@ -17,7 +18,6 @@ use crate::{
     best_fit,
     data::STDS,
     evaluation::{BestFitError, RatingCont},
-    format::RegexEq,
     stds::Standards,
     tree::{self, RNode},
     Rating, DEFAULT_STD_NAME,
@@ -138,7 +138,7 @@ fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
 }
 
 fn create_module_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
-    let mut rgxs = HashSet::new();
+    let mut rgxs = HashMap::new();
     log::warn!("module rgxs:");
     for rec_node in tree_recs {
         let rec_brw = rec_node.borrow();
@@ -157,13 +157,15 @@ fn create_module_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
                     } else {
                         path_regex.0.clone()
                     };
-                    rgxs.insert(RegexEq(rgx));
+                    let mut hasher = DefaultHasher::new();
+                    rgx.as_str().hash(&mut hasher);
+                    rgxs.insert(hasher.finish(), rgx);
                 }
             }
         }
     }
     log::warn!("");
-    rgxs.into_iter().map(|rgxeq| rgxeq.0).collect()
+    rgxs.into_iter().map(|rgxeq| rgxeq.1).collect()
 }
 
 impl Checker {
