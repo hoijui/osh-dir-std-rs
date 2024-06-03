@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2021 - 2023 Robin Vobruba <hoijui.quaero@gmail.com>
+# SPDX-FileCopyrightText: 2021 - 2024 Robin Vobruba <hoijui.quaero@gmail.com>
 #
 # SPDX-License-Identifier: Unlicense
 
@@ -54,8 +54,8 @@ jobs:
       - name: "Get the Rust toolchain"
         uses: dtolnay/rust-toolchain@stable
         with:
-            targets: x86_64-unknown-linux-musl
-            components: rustfmt, clippy
+          targets: x86_64-unknown-linux-musl
+          components: rustfmt, clippy
 
       - name: "Smart caching for rust/cargo"
         uses: Swatinem/rust-cache@v2
