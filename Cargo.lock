@@ -171,7 +171,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
-name = "osh-dir-std"
+name = "osh_dir_std"
 version = "0.8.2"
 dependencies = [
  "codify_hoijui",
@@ -187,7 +187,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "osh-dir-std-cli"
+name = "osh_dir_std_cli"
 version = "0.8.2"
 dependencies = [
  "anyhow",
@@ -196,7 +196,7 @@ dependencies = [
  "const_format",
  "log",
  "once_cell",
- "osh-dir-std",
+ "osh_dir_std",
  "regex",
  "serde",
  "serde_json",
