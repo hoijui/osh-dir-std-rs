@@ -82,7 +82,7 @@ impl Rating {
 ///
 /// # Errors
 ///
-/// If any of the input listing entires is an error,
+/// If any of the input listing entries is an error,
 /// usually caused by an I/O issue.
 pub fn rate_listing<T, E>(dirs_and_files: T, ignored_paths: &Regex) -> Result<Vec<RatingCont>, E>
 where
@@ -181,7 +181,7 @@ pub enum Error {
 ///
 /// # Errors
 ///
-/// If any of the input listing entires is an error,
+/// If any of the input listing entries is an error,
 /// usually caused by an I/O issue.
 pub fn rate_listing_by_stds<T>(
     dirs_and_files: T,

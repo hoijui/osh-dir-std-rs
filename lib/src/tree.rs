@@ -81,7 +81,7 @@ impl<'a> Default for Node<'a> {
 /// # Panics
 ///
 /// If a Record does not have at least one path part, or
-/// if a combined path regex turns out ot be malformed.
+/// if a combined path regex turns out to be malformed.
 #[must_use]
 pub fn create<'a>(std_raw: &'a format::DirStd) -> (RNode, Vec<RNode>) {
     let mut pp_recs: Vec<(Vec<String>, &'a format::Rec<'static>)> = std_raw
