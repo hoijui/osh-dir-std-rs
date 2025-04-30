@@ -200,7 +200,7 @@ where
         Standards::All => rate_listing(dirs_and_files, ignored_paths)?,
         Standards::BestFit => {
             let ratings: Vec<RatingCont> =
-                rate_listing(dirs_and_files, ignored_paths).map(Into::into)?;
+                rate_listing(dirs_and_files, ignored_paths)?;
             let max_rating: RatingCont = best_fit(ratings)?;
             vec![max_rating]
         }

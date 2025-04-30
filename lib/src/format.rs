@@ -196,6 +196,7 @@ impl Serialize for Rec<'_> {
 }
 
 /// Represents a record/row in an osh-dir-std standard definition.
+///
 /// The fields in this struct correspond to the rows in this table,
 /// where you will also find their descriptions:
 /// <https://github.com/hoijui/osh-dir-std/blob/main/definition_format.csv>
@@ -317,10 +318,10 @@ impl core::hash::Hash for DirStandard {
 impl Codify for DirStandard {
     fn init_code(&self) -> Cow<'static, str> {
         Cow::Owned(format!(
-            r##"format::DirStd {{
+            r#"format::DirStd {{
             name: "{}",
             records: {},
-        }}"##,
+        }}"#,
             self.name,
             self.records.init_code(),
         ))

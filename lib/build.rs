@@ -54,22 +54,22 @@ fn transcribe_dir_stds() -> BoxResult<()> {
 
     writeln!(
         &mut dir_stds_out,
-        r##"
+        r"
 use std::collections::HashMap;
 use std::collections::HashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use crate::format;
 
-    "##,
+    ",
     )?;
 
     let default_std_name = read_default_dir_std_name()?;
     let stds = read_dir_stds()?;
     writeln!(
         &mut dir_stds_out,
-        r##"pub const DEFAULT_STD_NAME: &str = "{default_std_name}";
-"##
+        r#"pub const DEFAULT_STD_NAME: &str = "{default_std_name}";
+"#
     )?;
 
     let mut std_names_sorted: Vec<&String> = stds.keys().collect();
@@ -77,15 +77,15 @@ use crate::format;
     #[allow(clippy::use_debug)]
     writeln!(
         &mut dir_stds_out,
-        r##"pub const STD_NAMES: [&str; {}] = {:?};
-"##,
+        r"pub const STD_NAMES: [&str; {}] = {:?};
+",
         std_names_sorted.len(),
         std_names_sorted,
     )?;
     writeln!(
         &mut dir_stds_out,
-        r##"pub static STDS: Lazy<HashMap<String, format::DirStd>> = Lazy::new(|| {});
-"##,
+        r"pub static STDS: Lazy<HashMap<String, format::DirStd>> = Lazy::new(|| {});
+",
         stds.init_code()
     )?;
 
