@@ -221,11 +221,11 @@ impl Checker {
                     })
             {
                 log::warn!("\nmodule related path: {dir_or_file_str_lossy}");
-                let mod_dir = mtch.as_str().into();
+                let mod_dir: PathBuf = mtch.as_str().into();
                 let sub_dir_or_file = Rc::new(PathBuf::from(
                     mod_rgx.replace(&dir_or_file_str_lossy, "").as_ref(),
                 ));
-                log::warn!("      mod_dir: {mod_dir:?}");
+                log::warn!("      mod_dir: {}", mod_dir.display());
                 log::warn!("      mod_dir stripped away: {sub_dir_or_file:?}");
                 self.modules
                     .entry(mod_dir)
