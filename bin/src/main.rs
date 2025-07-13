@@ -70,7 +70,7 @@ fn dirs_and_files(
     // As a side-effect, this also filters out duplicate input of any kind,
     // file or directory.
     // However, this also creates a cache in memory,
-    // that in the end will usually be as big as the whole input-listing itsself.
+    // that in the end will usually be as big as the whole input-listing its self.
     // TODO Thus we might want to add an option to skip this filtering, in case of large input listings.
     let mut dirs_adder = DirsAdder::new();
     files.flat_map(move |path_res| dirs_adder.call_mut(path_res))

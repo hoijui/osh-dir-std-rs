@@ -57,18 +57,18 @@ pub struct Coverage {
     /// The paths in the input dir that were ignored.
     pub ignored: Vec<Rc<PathBuf>>,
     /// The paths in the input dir that are below an arbitrary content root of the standard.
-    /// This is similar to `ignored`, but defined in the standard itsself.
+    /// This is similar to `ignored`, but defined in the standard its self.
     pub arbitrary_content: Vec<Rc<PathBuf>>,
-    /// The paths in the input dir that are below an generated content root of the standard,
+    /// The paths in the input dir that are below a generated content root of the standard,
     /// or fit a generated content regex otherwise.
-    /// These paths makr files that may be tracked,
+    /// These paths mark files that may be tracked,
     /// even though they might be generated.
     /// This might make sense, because in practice,
     /// people *will* put generated files into git repositories in OSH projects,
     /// not the least because it is also hard to avoid in a practical manner.
     /// To allow the standard to dictate where this might happen,
     /// gives us a level of control,
-    /// which allwos to concentrate these files under one or a few "generated content root dirs",
+    /// which allows to concentrate these files under one or a few "generated content root dirs",
     /// which in could optionally be turned into git submodules
     /// to improve the overall clone size of a project,
     /// at the cost of the additional complexity of managing submodules.
@@ -78,7 +78,7 @@ pub struct Coverage {
     pub out: Vec<Rc<PathBuf>>,
     /// The coverages for the modules directly included in the root listing;
     /// sub-modules (modules of modules) are contained in the sub coverage.
-    /// The path used as key here, is the path of the moduel directory -
+    /// The path used as key here, is the path of the module directory -
     /// modules always are assumed to be rooted in one directory each.
     /// We also assume, that the name of that directory
     /// is the (machine-readable version of) the modules name.
@@ -413,7 +413,7 @@ impl Coverage {
 ///
 /// # Errors
 ///
-/// If any of the input listing entires is an error,
+/// If any of the input listing entries is an error,
 /// usually caused by an I/O issue.
 pub fn cover_listing<T, E>(dirs_and_files: T, ignored_paths: &Regex) -> Result<Vec<Coverage>, E>
 where
@@ -494,7 +494,7 @@ where
     Ok(match stds {
         Standards::Default => {
             let std = STDS.get(DEFAULT_STD_NAME).expect(
-                "This name was chosen from the data itsself, so it should alwyas be available",
+                "This name was chosen from the data its self, so it should always be available",
             );
             vec![cover_listing_with(dirs_and_files, ignored_paths, std)?]
         }
