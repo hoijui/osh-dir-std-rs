@@ -66,7 +66,7 @@ It does _not_ check the content of any files in any way.
 ###### Fetch & Compile
 
 ```shell
-cargo install osh-dir-std
+cargo install osh_dir_std_cli
 ```
 
 ###### Local Sources
