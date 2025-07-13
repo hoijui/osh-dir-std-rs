@@ -8,23 +8,18 @@ members = [
    "bin",
    "lib",
 ]
-# [package]
-# name = "osh-dir-std-workspace"
-# version = "0.7.2"
-# license = "AGPL-3.0-or-later"
-# authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
-# description = """
-# Helps humans and machines deal with the
-# *OSH directory standard*:
-# <https://github.com/hoijui/osh-dir-std>
-# """
-# repository = "https://github.com/hoijui/osh-dir-std-rs"
-# homepage = "https://github.com/hoijui/osh-dir-std-rs"
-# keywords = ["norm", "osh", "directory", "structure"]
-# categories = ["command-line-utilities", "filesystem", "text-processing"]
-# readme = "README.md"
-# edition = "2021"
+default-members = ["bin"]
 
+[workspace.package]
+version = "0.3.0"
+license = "AGPL-3.0-or-later"
+authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
+repository = "https://github.com/hoijui/osh-dir-std-rs"
+homepage = "https://github.com/hoijui/osh-dir-std-rs"
+keywords = ["norm", "osh", "directory", "structure"]
+categories = ["command-line-utilities", "filesystem", "text-processing"]
+readme = "README.md"
+edition = "2021"
 
 [workspace.lints.rust]
 rust_2021_compatibility = { level = "warn", priority = -1 }
