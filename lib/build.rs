@@ -57,7 +57,7 @@ fn transcribe_dir_stds() -> BoxResult<()> {
         r"
 use std::collections::HashMap;
 use std::collections::HashSet;
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
 use regex::Regex;
 use crate::format;
 
@@ -84,7 +84,7 @@ use crate::format;
     )?;
     writeln!(
         &mut dir_stds_out,
-        r"pub static STDS: Lazy<HashMap<String, format::DirStd>> = Lazy::new(|| {});
+        r"pub static STDS: LazyLock<HashMap<String, format::DirStd>> = LazyLock::new(|| {});
 ",
         stds.init_code()
     )?;

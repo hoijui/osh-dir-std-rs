@@ -15,7 +15,6 @@ use std::{
 
 use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
-use once_cell::sync::Lazy;
 use osh_dir_std::{
     constants, cover_listing_by_stds,
     format::{Rec, Record},
@@ -25,6 +24,7 @@ use osh_dir_std::{
 };
 use regex::Regex;
 use serde::Serialize;
+use std::sync::LazyLock;
 use tracing::{error, metadata::LevelFilter};
 use tracing_subscriber::{
     fmt,
@@ -33,7 +33,7 @@ use tracing_subscriber::{
     Registry,
 };
 
-pub static EMPTY_PATH: Lazy<PathBuf> = Lazy::new(PathBuf::new);
+pub static EMPTY_PATH: LazyLock<PathBuf> = LazyLock::new(PathBuf::new);
 
 fn ignored_paths(args: &ArgMatches) -> Regex {
     let ignored_paths = args
