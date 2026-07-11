@@ -34,7 +34,7 @@ pub struct Checker {
     arbitrary_content_rgxs: Option<Vec<Regex>>,
     generated_content_rgxs: Option<Vec<Regex>>,
     module_rgxs: Option<Vec<Regex>>,
-    modules: HashMap<PathBuf, Checker>,
+    modules: HashMap<PathBuf, Self>,
     records_tree: Option<(RNode<'static>, Vec<RNode<'static>>)>,
 }
 
@@ -181,7 +181,7 @@ impl Checker {
     /// Creates a map of checkers with one entry for each standard.
     pub fn new_all(ignored_paths: &Regex) -> Vec<Self> {
         let mut checkers = Vec::new();
-        for (_std_name, std_records) in super::data::STDS.iter() {
+        for std_records in super::data::STDS.values() {
             checkers.push(Self::new(std_records, ignored_paths));
         }
         checkers

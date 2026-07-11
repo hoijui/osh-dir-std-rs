@@ -54,8 +54,7 @@ impl<'a> Node<'a> {
         let child_indent = format!("{indent}{tab}");
         format!(
             "{indent}- {name}\n{}",
-            &self
-                .children
+            self.children
                 .iter()
                 .map(|(name, tn)| tn.borrow().print_part(name, &child_indent, tab))
                 .collect::<Vec<String>>()
