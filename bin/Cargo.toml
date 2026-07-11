@@ -17,7 +17,7 @@ homepage = "https://github.com/hoijui/osh-dir-std-rs"
 keywords = ["norm", "osh", "directory", "structure"]
 categories = ["command-line-utilities", "filesystem", "text-processing"]
 readme = "../README.md"
-edition = "2021"
+edition = "2024"
 
 [[bin]]
 path = "src/main.rs"
@@ -30,7 +30,7 @@ workspace = true
 anyhow = "1.0"
 osh_dir_std = { version = "0.8", path = "../lib" }
 clap = { version = "4.5", features = ["std", "cargo", "help"], default-features = false }
-cli_utils = { version = "0.10", package = "cli_utils_hoijui" }
+cli_utils = { version = "0.13", package = "cli_utils_hoijui", default-features = false, features = [] }
 const_format = "0.2"
 log = "0.4"
 regex = "1.10"

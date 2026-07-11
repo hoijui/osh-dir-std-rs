@@ -99,7 +99,7 @@ pub fn create<'a>(std_raw: &'a format::DirStd) -> (RNode<'a>, Vec<RNode<'a>>) {
             (pps, rec)
         })
         .collect::<Vec<_>>();
-    pp_recs.sort_by(|a, b| a.0.len().cmp(&b.0.len()));
+    pp_recs.sort_by_key(|a| a.0.len());
     let root = Rc::new(RefCell::new(Node::new()));
     let mut rec_nodes = vec![];
     // create the tree

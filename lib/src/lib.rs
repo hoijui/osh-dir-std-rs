@@ -12,16 +12,16 @@ pub mod format;
 pub mod stds;
 pub mod tree;
 
+pub use coverage::Coverage;
 pub use coverage::cover_listing;
 pub use coverage::cover_listing_by_stds;
 pub use coverage::cover_listing_with;
-pub use coverage::Coverage;
+pub use evaluation::Rating;
+pub use evaluation::RatingCont;
 pub use evaluation::best_fit;
 pub use evaluation::rate_listing;
 pub use evaluation::rate_listing_by_stds;
 pub use evaluation::rate_listing_with;
-pub use evaluation::Rating;
-pub use evaluation::RatingCont;
 
 use git_version::git_version;
 

@@ -15,12 +15,11 @@ use thiserror::Error;
 use tracing::trace;
 
 use crate::{
-    best_fit,
+    DEFAULT_STD_NAME, Rating, best_fit,
     data::STDS,
     evaluation::{BestFitError, RatingCont},
     stds::Standards,
     tree::{self, RNode},
-    Rating, DEFAULT_STD_NAME,
 };
 
 use super::format::DirStd;
@@ -82,31 +81,29 @@ pub struct Coverage {
     /// modules always are assumed to be rooted in one directory each.
     /// We also assume, that the name of that directory
     /// is the (machine-readable version of) the modules name.
-    pub modules: HashMap<PathBuf, Coverage>,
+    pub modules: HashMap<PathBuf, Self>,
 }
 
 fn create_arbitrary_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
     let mut rgxs = vec![];
     for rec_node in tree_recs {
         let rec_brw = rec_node.borrow();
-        if let Some(rec) = rec_brw.value {
-            if let Some(arbitrary_content) = rec.arbitrary_content {
-                if arbitrary_content {
-                    if let Some(path_regex) = &rec_brw.path_regex {
-                        let rgx = if rec.directory {
-                            let mut rgx_str = path_regex.0.to_string();
-                            // This squeezes in before the final "$"
-                            rgx_str.insert_str(rgx_str.len() - 1, "/.*");
-                            Regex::new(&rgx_str).unwrap_or_else(|_| {
-                                panic!("Bad (assembled) arbitrary content dir regex '{rgx_str}'")
-                            })
-                        } else {
-                            path_regex.0.clone()
-                        };
-                        rgxs.push(rgx);
-                    }
-                }
-            }
+        if let Some(rec) = rec_brw.value
+            && let Some(arbitrary_content) = rec.arbitrary_content
+            && arbitrary_content
+            && let Some(path_regex) = &rec_brw.path_regex
+        {
+            let rgx = if rec.directory {
+                let mut rgx_str = path_regex.0.to_string();
+                // This squeezes in before the final "$"
+                rgx_str.insert_str(rgx_str.len() - 1, "/.*");
+                Regex::new(&rgx_str).unwrap_or_else(|_| {
+                    panic!("Bad (assembled) arbitrary content dir regex '{rgx_str}'")
+                })
+            } else {
+                path_regex.0.clone()
+            };
+            rgxs.push(rgx);
         }
     }
     rgxs
@@ -116,22 +113,21 @@ fn create_generated_content_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
     let mut rgxs = vec![];
     for rec_node in tree_recs {
         let rec_brw = rec_node.borrow();
-        if let Some(rec) = rec_brw.value {
-            if rec.generated {
-                if let Some(path_regex) = &rec_brw.path_regex {
-                    let rgx = if rec.directory {
-                        let mut rgx_str = path_regex.0.to_string();
-                        // This squeezes in before the final "$"
-                        rgx_str.insert_str(rgx_str.len() - 1, "/.*");
-                        Regex::new(&rgx_str).unwrap_or_else(|_| {
-                            panic!("Bad (assembled) generated content dir regex '{rgx_str}'")
-                        })
-                    } else {
-                        path_regex.0.clone()
-                    };
-                    rgxs.push(rgx);
-                }
-            }
+        if let Some(rec) = rec_brw.value
+            && rec.generated
+            && let Some(path_regex) = &rec_brw.path_regex
+        {
+            let rgx = if rec.directory {
+                let mut rgx_str = path_regex.0.to_string();
+                // This squeezes in before the final "$"
+                rgx_str.insert_str(rgx_str.len() - 1, "/.*");
+                Regex::new(&rgx_str).unwrap_or_else(|_| {
+                    panic!("Bad (assembled) generated content dir regex '{rgx_str}'")
+                })
+            } else {
+                path_regex.0.clone()
+            };
+            rgxs.push(rgx);
         }
     }
     rgxs
@@ -142,26 +138,24 @@ fn create_module_rgxs(tree_recs: &[RNode]) -> Vec<Regex> {
     log::warn!("module rgxs:");
     for rec_node in tree_recs {
         let rec_brw = rec_node.borrow();
-        if let Some(rec) = rec_brw.value {
-            if rec.module {
-                if let Some(path_regex) = &rec_brw.path_regex {
-                    let rgx = if rec.directory {
-                        let mut rgx_str = path_regex.0.to_string();
-                        // This removes the final "$"
-                        rgx_str.remove(rgx_str.len() - 1);
-                        rgx_str.insert(rgx_str.len(), '/');
-                        log::warn!("{rgx_str}");
-                        Regex::new(&rgx_str).unwrap_or_else(|_| {
-                            panic!("Bad (assembled) module dir regex '{rgx_str}'")
-                        })
-                    } else {
-                        path_regex.0.clone()
-                    };
-                    let mut hasher = DefaultHasher::new();
-                    rgx.as_str().hash(&mut hasher);
-                    rgxs.insert(hasher.finish(), rgx);
-                }
-            }
+        if let Some(rec) = rec_brw.value
+            && rec.module
+            && let Some(path_regex) = &rec_brw.path_regex
+        {
+            let rgx = if rec.directory {
+                let mut rgx_str = path_regex.0.to_string();
+                // This removes the final "$"
+                rgx_str.remove(rgx_str.len() - 1);
+                rgx_str.insert(rgx_str.len(), '/');
+                log::warn!("{rgx_str}");
+                Regex::new(&rgx_str)
+                    .unwrap_or_else(|_| panic!("Bad (assembled) module dir regex '{rgx_str}'"))
+            } else {
+                path_regex.0.clone()
+            };
+            let mut hasher = DefaultHasher::new();
+            rgx.as_str().hash(&mut hasher);
+            rgxs.insert(hasher.finish(), rgx);
         }
     }
     log::warn!("");
@@ -256,18 +250,18 @@ impl Checker {
         let mut matching = false;
         for rec_node in tree_recs {
             let rec_node_brwd = rec_node.borrow();
-            if let Some(path_regex) = &rec_node_brwd.path_regex {
-                if path_regex.is_match(dir_or_file_str_lossy.as_ref()) {
-                    matching = true;
-                    let rec = rec_node_brwd
-                        .value
-                        .expect("A tree node with path_regex set should never have a None value");
-                    self.coverage
-                        .r#in
-                        .entry(rec)
-                        .or_default()
-                        .push(Rc::clone(dir_or_file));
-                }
+            if let Some(path_regex) = &rec_node_brwd.path_regex
+                && path_regex.is_match(dir_or_file_str_lossy.as_ref())
+            {
+                matching = true;
+                let rec = rec_node_brwd
+                    .value
+                    .expect("A tree node with path_regex set should never have a None value");
+                self.coverage
+                    .r#in
+                    .entry(rec)
+                    .or_default()
+                    .push(Rc::clone(dir_or_file));
             }
         }
 
@@ -381,12 +375,12 @@ impl Coverage {
             .iter()
             .fold(0, |sum, (num_paths, _part_rating)| sum + num_paths)
             as f32;
-        let combined_rating = rating_parts
+        /*let combined_rating = */
+        rating_parts
             .iter()
             .fold(0.0, |sum, (num_paths, part_rating)| {
                 sum + (part_rating * (*num_paths as f32 / num_combined_paths))
-            });
-        combined_rating
+            })
     }
 
     /// Returns a list of the identified module(/parts) directories.
@@ -509,9 +503,11 @@ where
                 })
                 .collect();
             let max_rating = best_fit(ratings)?;
-            vec![max_rating
-                .coverage
-                .expect("At this point, all coverages have to be present")]
+            vec![
+                max_rating
+                    .coverage
+                    .expect("At this point, all coverages have to be present"),
+            ]
         }
         Standards::Specific(std_name) => {
             let std = STDS.get(std_name).expect("Clap already checked the name!");

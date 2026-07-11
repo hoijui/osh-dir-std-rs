@@ -16,21 +16,19 @@ use std::{
 use clap::ArgMatches;
 use cli::{A_L_INPUT_LISTING, A_L_QUIET, A_L_VERSION};
 use osh_dir_std::{
-    constants, cover_listing_by_stds,
+    Coverage, RatingCont, constants, cover_listing_by_stds,
     format::{Rec, Record},
     rate_listing_by_stds,
     stds::Standards,
-    Coverage, RatingCont,
 };
 use regex::Regex;
 use serde::Serialize;
 use std::sync::LazyLock;
 use tracing::{error, metadata::LevelFilter};
 use tracing_subscriber::{
-    fmt,
+    Registry, fmt,
     prelude::*,
     reload::{self, Handle},
-    Registry,
 };
 
 pub static EMPTY_PATH: LazyLock<PathBuf> = LazyLock::new(PathBuf::new);
@@ -45,12 +43,13 @@ fn ignored_paths(args: &ArgMatches) -> Regex {
 }
 
 fn input_stream(args: &ArgMatches) -> io::Result<Box<dyn BufRead>> {
-    let input_listing = args.get_one::<PathBuf>(A_L_INPUT_LISTING);
+    let input_listing = args.get_one::<PathBuf>(A_L_INPUT_LISTING).cloned();
+    let in_stream_ident = cli_utils::StreamIdent::from_path_buf_opt(input_listing, true);
     log::info!(
         "Reading input listing from {}.",
-        cli_utils::create_input_reader_description(input_listing)
+        in_stream_ident.description()
     );
-    cli_utils::create_input_reader(input_listing)
+    in_stream_ident.create_input_reader()
 }
 
 fn dirs_and_files(
@@ -84,12 +83,10 @@ fn standards(args: &ArgMatches) -> Standards {
 }
 
 fn out_stream(args: &ArgMatches) -> io::Result<Box<dyn Write>> {
-    let out_stream_id = args.get_one::<PathBuf>(cli::A_P_OUTPUT);
-    log::info!(
-        "Writing output to {}",
-        cli_utils::create_output_writer_description(out_stream_id)
-    );
-    cli_utils::create_output_writer(out_stream_id)
+    let out_stream_id = args.get_one::<PathBuf>(cli::A_P_OUTPUT).cloned();
+    let out_stream_ident = cli_utils::StreamIdent::from_path_buf_opt(out_stream_id, false);
+    log::info!("Writing output to {}", out_stream_ident.description());
+    out_stream_ident.create_output_writer()
 }
 
 #[allow(clippy::print_stdout)]
@@ -139,9 +136,11 @@ impl DirsAdder {
                 .map(Ok)
                 .collect::<Vec<io::Result<_>>>()
         } else {
-            vec![path_res
-                .map(|path| Path::to_path_buf(path.as_ref()))
-                .map(Rc::new)]
+            vec![
+                path_res
+                    .map(|path| Path::to_path_buf(path.as_ref()))
+                    .map(Rc::new),
+            ]
         }
     }
 }

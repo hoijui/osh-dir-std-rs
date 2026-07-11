@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::trace;
 
-use crate::{cover_listing, coverage::cover_listing_with, data::STDS, stds::Standards, Coverage};
+use crate::{Coverage, cover_listing, coverage::cover_listing_with, data::STDS, stds::Standards};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Rating {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use clap::{command, value_parser, Arg, ArgAction, ArgGroup, Command, ValueHint};
+use clap::{Arg, ArgAction, ArgGroup, Command, ValueHint, command, value_parser};
 use const_format::formatcp;
 use osh_dir_std::{constants::PROJECT_ISSUES_URL, data::STD_NAMES};
 use regex::Regex;

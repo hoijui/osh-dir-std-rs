@@ -56,9 +56,9 @@ checksum = "b94f61472cee1439c0b966b47e3aca9ae07e45d070759512cd390ea2bebc6675"
 
 [[package]]
 name = "cli_utils_hoijui"
-version = "0.10.0"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "590d52c740a941788d9b807844c52e7df76dc18e82acdd37e1a2065e6695274f"
+checksum = "43485584302767e60e20c631c7ba47feb91c11cadd0370bb2598703ef4036f21"
 
 [[package]]
 name = "codify_hoijui"
