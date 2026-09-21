@@ -199,7 +199,7 @@ impl Serialize for Rec<'_> {
 ///
 /// The fields in this struct correspond to the rows in this table,
 /// where you will also find their descriptions:
-/// <https://github.com/hoijui/osh-dir-std/blob/main/definition_format.csv>
+/// <https://gitlab.com/OSEGermany/osh-dir-std/blob/main/definition_format.csv>
 ///
 /// This is the owned version of [`Rec`].
 ///

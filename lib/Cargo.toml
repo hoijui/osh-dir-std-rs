@@ -10,7 +10,7 @@ authors = ["Robin Vobruba <hoijui.quaero@gmail.com>"]
 description = """
 Helps humans and machines deal with the
 *OSH directory standard*:
-<https://github.com/hoijui/osh-dir-std>
+<https://gitlab.com/OSEGermany/osh-dir-std>
 """
 repository = "https://github.com/hoijui/osh-dir-std-rs"
 homepage = "https://github.com/hoijui/osh-dir-std-rs"

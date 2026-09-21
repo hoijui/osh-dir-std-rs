@@ -76,7 +76,7 @@ impl Rating {
 
 /// Given a set of the relative paths of all dirs and files in a project,
 /// for each of the known dir standards from
-/// <https://github.com/hoijui/osh-dir-std/>,
+/// <https://gitlab.com/OSEGermany/osh-dir-std/>,
 /// calculate how likely it seems
 /// that the project is following this standard.
 ///
@@ -174,7 +174,7 @@ pub enum Error {
 
 /// Given a set of the relative paths of all dirs and files in a project,
 /// for each of the known dir standards from
-/// <https://github.com/hoijui/osh-dir-std/>,
+/// <https://gitlab.com/OSEGermany/osh-dir-std/>,
 /// calculate how likely it seems
 /// that the project is following this standard,
 /// and then only return the rating for the best fit.

@@ -402,7 +402,7 @@ impl Coverage {
 
 /// Given a set of the relative paths of all dirs and files in a project,
 /// for each of the known dir standards from
-/// <https://github.com/hoijui/osh-dir-std/>,
+/// <https://gitlab.com/OSEGermany/osh-dir-std/>,
 /// calculate what record of the standard each dir or file might be covered under.
 ///
 /// # Errors
@@ -463,7 +463,7 @@ pub enum Error {
 
 /// Given a set of the relative paths of all dirs and files in a project,
 /// for each of the known dir standards from
-/// <https://github.com/hoijui/osh-dir-std/>,
+/// <https://gitlab.com/OSEGermany/osh-dir-std/>,
 /// calculate how likely it seems
 /// that the project is following this standard,
 /// and then only return the coverage for the best fit.

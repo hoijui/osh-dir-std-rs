@@ -4,4 +4,4 @@
 
 [submodule "resources/osh-dir-std"]
 	path = lib/resources/osh-dir-std
-	url = https://github.com/hoijui/osh-dir-std.git
+	url = https://gitlab.com/OSEGermany/osh-dir-std
