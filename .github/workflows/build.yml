@@ -29,17 +29,13 @@ jobs:
     name: Compile
     runs-on: ubuntu-latest
     steps:
-      - name: "Check out the repo"
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v7
         with:
-          # This makes sure we also get tags,
-          # so we get the correct version; see bug:
-          # https://github.com/actions/checkout/issues/701
-          fetch-depth: 0
           submodules: true
 
       - name: "Check out the build scripts"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: 'hoijui/rust-project-scripts'
           path: 'run/rp'
