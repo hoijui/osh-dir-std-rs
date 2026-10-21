@@ -39,7 +39,7 @@ SPDX-License-Identifier: CC0-1.0
 
 Code that helps humans and machines deal with
 the [OSH directory standard](
-https://github.com/OSEGermany/osh-dir-std).
+https://gitlab.com/OSEGermany/osh-dir-std).
 
 This consists of two parts:
 
